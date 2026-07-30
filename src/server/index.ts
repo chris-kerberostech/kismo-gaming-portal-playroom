@@ -6,14 +6,52 @@ import {
 } from "partyserver";
 
 import type { ChatMessage, Message } from "../shared";
+import {
+	type FirebaseEnv,
+	verifyPlayroomTokenWithDataConnect,
+} from "./firebase";
 
 const AUTH_COOKIE_NAME = "kp_auth";
 const AUTH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 4;
 
-type AuthEnv = Env & {
+type AuthEnv = Env & FirebaseEnv & {
 	AUTH_JWT_SECRET?: string;
 	AUTH_VERIFY_URL?: string;
+	AUTH_ALLOW_FALLBACK?: string;
 };
+
+function toHex(bytes: Uint8Array): string {
+	return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+async function stableFingerprint(value: string): Promise<string> {
+	const digest = await crypto.subtle.digest(
+		"SHA-256",
+		new TextEncoder().encode(value),
+	);
+	return toHex(new Uint8Array(digest)).slice(0, 12);
+}
+
+function authLog(
+	level: "info" | "warn" | "error",
+	event: string,
+	details: Record<string, unknown>,
+) {
+	const payload = {
+		scope: "auth",
+		event,
+		...details,
+	};
+	if (level === "warn") {
+		console.warn(payload);
+		return;
+	}
+	if (level === "error") {
+		console.error(payload);
+		return;
+	}
+	console.log(payload);
+}
 
 function parseCookies(cookieHeader: string | null): Record<string, string> {
 	if (!cookieHeader) return {};
@@ -92,20 +130,99 @@ async function verifyHs256Jwt(token: string, secret: string): Promise<boolean> {
 	return timingSafeEqual(expectedSignature, encodedSignature);
 }
 
-async function verifyToken(token: string, env: AuthEnv): Promise<boolean> {
+async function verifyTokenWithDataConnect(
+	token: string,
+	env: AuthEnv,
+	traceId: string,
+): Promise<boolean> {
+	const verification = await verifyPlayroomTokenWithDataConnect(token, env);
+	const playroomSessionId = verification.playroomSessionId;
+	if (!playroomSessionId) {
+		authLog("warn", "claims_missing_session_id", {
+			traceId,
+		});
+		return false;
+	}
+
+	const tokenFp = await stableFingerprint(token);
+	const sessionFp = await stableFingerprint(playroomSessionId);
+	authLog("info", "dataconnect_lookup_start", {
+		traceId,
+		tokenFp,
+		sessionFp,
+	});
+	authLog("info", "dataconnect_lookup_result", {
+		traceId,
+		tokenFp,
+		sessionFp,
+		activeCount: verification.activeCount,
+	});
+
+	return verification.ok;
+}
+
+async function verifyToken(
+	token: string,
+	env: AuthEnv,
+	traceId: string,
+): Promise<boolean> {
+	try {
+		if (await verifyTokenWithDataConnect(token, env, traceId)) {
+			authLog("info", "verification_success", {
+				traceId,
+				source: "dataconnect",
+			});
+			return true;
+		}
+	} catch (error) {
+		authLog("error", "dataconnect_lookup_error", {
+			traceId,
+			error:
+				error instanceof Error
+					? { name: error.name, message: error.message }
+					: String(error),
+		});
+	}
+
+	const allowFallback = env.AUTH_ALLOW_FALLBACK === "1";
+	if (!allowFallback) {
+		authLog("warn", "verification_denied", {
+			traceId,
+			reason: "dataconnect_failed_and_fallback_disabled",
+		});
+		return false;
+	}
+
 	if (env.AUTH_VERIFY_URL) {
+		authLog("info", "fallback_verify_url_start", { traceId });
 		const response = await fetch(env.AUTH_VERIFY_URL, {
 			method: "GET",
 			headers: {
 				Authorization: `Bearer ${token}`,
 			},
 		});
+		authLog("info", "fallback_verify_url_result", {
+			traceId,
+			ok: response.ok,
+			status: response.status,
+		});
 		return response.ok;
 	}
 
 	if (env.AUTH_JWT_SECRET) {
-		return verifyHs256Jwt(token, env.AUTH_JWT_SECRET);
+		authLog("info", "fallback_jwt_secret_start", { traceId });
+		const ok = await verifyHs256Jwt(token, env.AUTH_JWT_SECRET);
+		authLog("info", "fallback_jwt_secret_result", {
+			traceId,
+			ok,
+		});
+		return ok;
 	}
+
+	authLog("warn", "verification_denied", {
+		traceId,
+		reason: "no_fallback_mechanism_configured",
+	});
 
 	return false;
 }
@@ -120,6 +237,11 @@ function unauthorizedResponse(): Response {
 }
 
 function addAuthCookie(response: Response, secure: boolean): Response {
+	if (response.status === 101) {
+		// WebSocket upgrades must keep the original 101 response untouched.
+		return response;
+	}
+
 	const nextHeaders = new Headers(response.headers);
 	const cookieParts = [
 		`${AUTH_COOKIE_NAME}=1`,
@@ -214,6 +336,7 @@ export class Chat extends Server<Env> {
 export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
+		const traceId = crypto.randomUUID().slice(0, 8);
 		const isSecureRequest = url.protocol === "https:";
 		const cookies = parseCookies(request.headers.get("Cookie"));
 		const alreadyAuthorized = cookies[AUTH_COOKIE_NAME] === "1";
@@ -221,16 +344,49 @@ export default {
 			url.searchParams.get("token") ||
 			request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ||
 			"";
+		authLog("info", "request_received", {
+			traceId,
+			method: request.method,
+			path: url.pathname,
+			hasAuthCookie: alreadyAuthorized,
+			hasToken: token.length > 0,
+		});
 
 		if (!alreadyAuthorized) {
-			if (!token) return unauthorizedResponse();
-			const isValidToken = await verifyToken(token, env as AuthEnv);
-			if (!isValidToken) return unauthorizedResponse();
+			if (!token) {
+				authLog("warn", "request_denied", {
+					traceId,
+					reason: "missing_token",
+					path: url.pathname,
+				});
+				return unauthorizedResponse();
+			}
+			const isValidToken = await verifyToken(token, env as AuthEnv, traceId);
+			if (!isValidToken) {
+				authLog("warn", "request_denied", {
+					traceId,
+					reason: "verification_failed",
+					path: url.pathname,
+				});
+				return unauthorizedResponse();
+			}
 
 			const partykitResponse = await routePartykitRequest(request, { ...env });
-			if (partykitResponse) return addAuthCookie(partykitResponse, isSecureRequest);
+			if (partykitResponse) {
+				authLog("info", "request_allowed", {
+					traceId,
+					target: "partykit",
+					path: url.pathname,
+				});
+				return addAuthCookie(partykitResponse, isSecureRequest);
+			}
 
 			const assetsResponse = await env.ASSETS.fetch(request);
+			authLog("info", "request_allowed", {
+				traceId,
+				target: "assets",
+				path: url.pathname,
+			});
 			return addAuthCookie(assetsResponse, isSecureRequest);
 		}
 
