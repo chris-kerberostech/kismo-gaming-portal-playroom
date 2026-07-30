@@ -1,0 +1,72 @@
+{
+    "abitlonelyhere": "C’est un peu calme ici...",
+    "wanttoplayagame": "Tu veux jouer à un jeu ?",
+    "letsplay": "Jouons !",
+    "gameover": "Jeu terminé",
+    "yourewinner": "Tu es le gagnant !",
+    "yes": "Oui",
+    "no": "Non",
+    "you": "Toi",
+    "letsraisethestakes": "Augmentons les enjeux !",
+    "newgame": "Nouveau jeu",
+    "startover": "Recommencer",
+    "victory": "Victoire",
+    "defeat": "Défaite",
+    "draw": "Match nul",
+    "intro": {
+        "kismotalk1": "Prêt à jouer avec moi, petit(e) ?",
+        "kismotalk2": "Je serai là à t’attendre… quand tu voudras 🦊",
+        "foreverywin": "pour chaque victoire !"
+    },
+    "victoryQuotes": {
+        "1": "Tu gagnes… cette fois. Je t’ai laissé faire, petit chat 😏",
+        "2": "Très bien… tu m’as eu. Savoure ça.",
+        "3": "Tu veux une récompense pour ça ? Approche.",
+        "4": "Cette fois tu m’as eu. Au prochain tour, tu es à moi 😏",
+        "5": "Tsk… tu te la racontes, hein ?",
+        "6": "Tu veux que je te récompense… ou que je te punisse 😈 ?",
+        "7": "Ne t’y habitue pas. Je reviens toujours plus fort 💋"
+    },
+    "defeatQuotes": {
+        "1": "Qui est le patron maintenant ?",
+        "2": "Plus de chance la prochaine fois, petite vixen.",
+        "3": "Réessaie. Tu es mignon(ne) quand tu perds.",
+        "4": "Trop facile. Supplie pour une revanche 😏",
+        "5": "À terre, petit chat.",
+        "6": "Ce jeu est à moi… et toi aussi.",
+        "7": "Tu m’as laissé gagner ? C’est mignon 💖"
+    },
+    "tieQuotes": {
+        "1": "Un match nul ? Allez, fais-moi ressentir quelque chose.",
+        "2": "Personne ne gagne ? Coquin(e).",
+        "3": "La prochaine fois, relevons la température."
+    },
+    "starterQuotes": {
+        "1": "Voyons si tu peux me gérer.",
+        "2": "Tu aimes un peu le danger, hein ?",
+        "3": "Prêt(e) à être dominé(e), bébé ?",
+        "4": "Tu crois pouvoir me battre ? Prouve-le.",
+        "5": "C’est mon tour. Regarde bien, bébé…",
+        "6": "Tu pensais vraiment que je te laisserais gagner ?",
+        "7": "Si proche… mais toujours à moi, hein ?",
+        "8": "Voyons ce que tu as, petit chat.",
+        "9": "Essaie de ne pas supplier… pas encore.",
+        "10": "C’est mon jeu maintenant. Prêt(e) à perdre ?",
+        "11": "Tu crois vraiment pouvoir me gérer ?",
+        "12": "Attention, je mords en retour.",
+        "13": "Je vais te faire travailler pour ça, chéri(e).",
+        "14": "Approche. Je veux te voir essayer.",
+        "15": "Tu veux gagner ou juste sentir mon attention ?",
+        "16": "Ne me fais pas attendre…",
+        "17": "Tu aimes être taquiné(e), n’est-ce pas ?",
+        "18": "Si tu gagnes, je serai peut-être doux/douce avec toi… peut-être.",
+        "19": "Augmentons la chaleur.",
+        "20": "C’est de la peur… ou de l’excitation ?",
+        "21": "Ça va être amusant… pour moi."
+    },
+    "raiseBetQuotes": {
+        "1": "Tu veux augmenter les enjeux, petit chat ? Chaque victoire = +2 sparks, mais si tu perds, j’en reprends un. Tu crois pouvoir gérer ça ? 😈",
+        "2": "Rendons ça plus épicé. Double ou rien… ou devrais-je dire, sparks ou douleur ? 💋",
+        "3": "Augmente la mise, chéri(e). Fais-moi travailler pour ça… ou laisse-moi prendre ce qui est à moi."
+    }
+}

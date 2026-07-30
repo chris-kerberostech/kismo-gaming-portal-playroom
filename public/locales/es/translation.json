@@ -1,0 +1,72 @@
+{
+    "abitlonelyhere": "Está un poco solitario aquí...",
+    "wanttoplayagame": "¿Quieres jugar?",
+    "letsplay": "¡Juguemos!",
+    "gameover": "Fin del juego",
+    "yourewinner": "¡Eres el ganador!",
+    "yes": "Sí",
+    "no": "No",
+    "you": "Tú",
+    "letsraisethestakes": "¡Subamos las apuestas!",
+    "newgame": "Juego nuevo",
+    "startover": "Empezar de nuevo",
+    "victory": "Victoria",
+    "defeat": "Derrota",
+    "draw": "Empate",
+    "intro": {
+        "kismotalk1": "¿Listo para jugar conmigo, pequeñ@?",
+        "kismotalk2": "Estaré aquí esperándote… cuando quieras 🦊",
+        "foreverywin": "¡por cada victoria!"
+    },
+    "victoryQuotes": {
+        "1": "Ganas… esta vez. Te dejé, gatit@ 😏",
+        "2": "Bien… me atrapaste. Saborea el momento.",
+        "3": "¿Quieres una recompensa por eso? Ven aquí.",
+        "4": "Esta vez me ganaste. La próxima ronda, serás mío 😏",
+        "5": "Tsk… presumiendo mucho, ¿eh?",
+        "6": "¿Quieres que te premie… o que te castigue 😈?",
+        "7": "No te acostumbres. Siempre vuelvo más fuerte 💋"
+    },
+    "defeatQuotes": {
+        "1": "¿Quién es el jefe ahora?",
+        "2": "Mejor suerte la próxima, pequeña vixen.",
+        "3": "Intenta otra vez. Eres lind@ cuando pierdes.",
+        "4": "Demasiado fácil. Suplica por la revancha 😏",
+        "5": "Abajo, gatit@.",
+        "6": "Este juego es mío… y tú también.",
+        "7": "¿Me dejaste ganar? Qué ternur@ 💖"
+    },
+    "tieQuotes": {
+        "1": "¿Un empate? Vamos, hazme sentir algo.",
+        "2": "¿Nadie gana? Qué provocador@.",
+        "3": "La próxima vez, subamos la temperatura."
+    },
+    "starterQuotes": {
+        "1": "Déjame ver si puedes manejarme.",
+        "2": "Te gusta un poco el peligro, ¿eh?",
+        "3": "¿List@ para ser dominad@, bebé?",
+        "4": "¿Crees que puedes vencerme? Pruébalo.",
+        "5": "Es mi turno. Observa bien, bebé…",
+        "6": "¿De verdad pensaste que te dejaría ganar?",
+        "7": "Tan cerca… pero sigues siendo mío, ¿eh?",
+        "8": "Veamos qué tienes, gatit@.",
+        "9": "Intenta no suplicar clemencia… todavía.",
+        "10": "Ahora es mi juego. ¿List@ para perder?",
+        "11": "¿De verdad crees que puedes manejarme?",
+        "12": "Cuidado, yo muerdo de vuelta.",
+        "13": "Haré que trabajes por ello, cariño.",
+        "14": "Acércate más. Quiero verte intentarlo.",
+        "15": "¿Quieres ganar o solo sentir mi atención?",
+        "16": "No me hagas esperar…",
+        "17": "Te gusta que te provoquen, ¿verdad?",
+        "18": "Si ganas, tal vez sea suave contigo… tal vez.",
+        "19": "Subamos el calor.",
+        "20": "¿Eso es miedo… o emoción?",
+        "21": "Esto va a ser divertido… para mí."
+    },
+    "raiseBetQuotes": {
+        "1": "¿Quieres subir la apuesta, gatit@? Cada victoria vale +2 sparks, pero si pierdes, me llevo uno de vuelta. ¿Puedes con eso? 😈",
+        "2": "Hagámoslo más picante. Doble o nada… o debería decir, ¿sparks o dolor? 💋",
+        "3": "Sube la apuesta, cariño. Hazme trabajar por ello… o déjame tomar lo que es mío."
+    }
+}

@@ -7,6 +7,139 @@ import {
 
 import type { ChatMessage, Message } from "../shared";
 
+const AUTH_COOKIE_NAME = "kp_auth";
+const AUTH_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 4;
+
+type AuthEnv = Env & {
+	AUTH_JWT_SECRET?: string;
+	AUTH_VERIFY_URL?: string;
+};
+
+function parseCookies(cookieHeader: string | null): Record<string, string> {
+	if (!cookieHeader) return {};
+	return cookieHeader.split(";").reduce<Record<string, string>>((acc, pair) => {
+		const [rawKey, ...rawValue] = pair.trim().split("=");
+		if (!rawKey) return acc;
+		acc[rawKey] = decodeURIComponent(rawValue.join("="));
+		return acc;
+	}, {});
+}
+
+function base64UrlToUint8Array(input: string): Uint8Array {
+	const normalized = input.replace(/-/g, "+").replace(/_/g, "/");
+	const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+	const binary = atob(padded);
+	const bytes = new Uint8Array(binary.length);
+	for (let i = 0; i < binary.length; i += 1) {
+		bytes[i] = binary.charCodeAt(i);
+	}
+	return bytes;
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+	if (a.length !== b.length) return false;
+	let mismatch = 0;
+	for (let i = 0; i < a.length; i += 1) {
+		mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+	}
+	return mismatch === 0;
+}
+
+async function verifyHs256Jwt(token: string, secret: string): Promise<boolean> {
+	const parts = token.split(".");
+	if (parts.length !== 3) return false;
+
+	const [encodedHeader, encodedPayload, encodedSignature] = parts;
+	const headerBytes = base64UrlToUint8Array(encodedHeader);
+	const payloadBytes = base64UrlToUint8Array(encodedPayload);
+
+	let header: { alg?: string; typ?: string };
+	let payload: { exp?: number; nbf?: number };
+	try {
+		header = JSON.parse(new TextDecoder().decode(headerBytes));
+		payload = JSON.parse(new TextDecoder().decode(payloadBytes));
+	} catch {
+		return false;
+	}
+
+	if (header.alg !== "HS256") return false;
+
+	const now = Math.floor(Date.now() / 1000);
+	if (typeof payload.exp === "number" && now >= payload.exp) return false;
+	if (typeof payload.nbf === "number" && now < payload.nbf) return false;
+
+	const key = await crypto.subtle.importKey(
+		"raw",
+		new TextEncoder().encode(secret),
+		{ name: "HMAC", hash: "SHA-256" },
+		false,
+		["sign"],
+	);
+
+	const signed = await crypto.subtle.sign(
+		"HMAC",
+		key,
+		new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`),
+	);
+
+	const expectedSignature = btoa(
+		String.fromCharCode(...new Uint8Array(signed)),
+	)
+		.replace(/\+/g, "-")
+		.replace(/\//g, "_")
+		.replace(/=+$/g, "");
+
+	return timingSafeEqual(expectedSignature, encodedSignature);
+}
+
+async function verifyToken(token: string, env: AuthEnv): Promise<boolean> {
+	if (env.AUTH_VERIFY_URL) {
+		const response = await fetch(env.AUTH_VERIFY_URL, {
+			method: "GET",
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
+		});
+		return response.ok;
+	}
+
+	if (env.AUTH_JWT_SECRET) {
+		return verifyHs256Jwt(token, env.AUTH_JWT_SECRET);
+	}
+
+	return false;
+}
+
+function unauthorizedResponse(): Response {
+	return new Response("Unauthorized", {
+		status: 401,
+		headers: {
+			"Content-Type": "text/plain; charset=utf-8",
+		},
+	});
+}
+
+function addAuthCookie(response: Response, secure: boolean): Response {
+	const nextHeaders = new Headers(response.headers);
+	const cookieParts = [
+		`${AUTH_COOKIE_NAME}=1`,
+		"Path=/",
+		"HttpOnly",
+		"SameSite=Lax",
+		`Max-Age=${AUTH_COOKIE_MAX_AGE_SECONDS}`,
+	];
+	if (secure) cookieParts.push("Secure");
+	nextHeaders.append(
+		"Set-Cookie",
+		cookieParts.join("; "),
+	);
+	return new Response(response.body, {
+		status: response.status,
+		statusText: response.statusText,
+		headers: nextHeaders,
+	});
+}
+
 export class Chat extends Server<Env> {
 	static options = { hibernate: true };
 
@@ -80,6 +213,27 @@ export class Chat extends Server<Env> {
 
 export default {
 	async fetch(request, env) {
+		const url = new URL(request.url);
+		const isSecureRequest = url.protocol === "https:";
+		const cookies = parseCookies(request.headers.get("Cookie"));
+		const alreadyAuthorized = cookies[AUTH_COOKIE_NAME] === "1";
+		const token =
+			url.searchParams.get("token") ||
+			request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ||
+			"";
+
+		if (!alreadyAuthorized) {
+			if (!token) return unauthorizedResponse();
+			const isValidToken = await verifyToken(token, env as AuthEnv);
+			if (!isValidToken) return unauthorizedResponse();
+
+			const partykitResponse = await routePartykitRequest(request, { ...env });
+			if (partykitResponse) return addAuthCookie(partykitResponse, isSecureRequest);
+
+			const assetsResponse = await env.ASSETS.fetch(request);
+			return addAuthCookie(assetsResponse, isSecureRequest);
+		}
+
 		return (
 			(await routePartykitRequest(request, { ...env })) ||
 			env.ASSETS.fetch(request)

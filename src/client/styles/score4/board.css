@@ -1,0 +1,317 @@
+.board {
+  display: grid;
+  grid-template-rows: repeat(6, 48px);
+  background: #151620;
+  border-radius: 1rem;
+  box-shadow: 0 0 32px #de0b59, 0 0 16px #32b2ea;
+  margin: 2rem auto;
+  width: fit-content;
+}
+.row {
+  display: grid;
+  grid-template-columns: repeat(7, 48px);
+}
+.cell {
+  width: 44px;
+  height: 44px;
+  margin: 2px;
+  background: #222;
+  border-radius: 50%;
+  border: 2px solid #39394d;
+  transition: box-shadow 0.2s;
+  cursor: pointer;
+}
+.cell.fuchsia {
+  background: #de0b59;
+  box-shadow: 0 0 18px #de0b59;
+}
+.cell.blue {
+  background: #32b2ea;
+  box-shadow: 0 0 18px #32b2ea;
+}
+.quote-bubble.neon {
+  color: #fff;
+  background: rgba(30, 0, 35, 0.8);
+  border: 2px solid #de0b59;
+  border-radius: 16px;
+  padding: 1rem 2rem;
+  margin: 1rem auto;
+  font-size: 1.2rem;
+  box-shadow: 0 0 18px #de0b59, 0 0 6px #32b2ea;
+  width: fit-content;
+}
+.kismo-avatar {
+  margin: 1rem auto;
+  font-size: 2.4rem;
+  text-align: center;
+}
+.kismo-avatar.win {
+  animation: winnerGlow 0.6s infinite alternate;
+}
+.kismo-avatar.lose {
+  animation: loserShake 0.5s 4;
+}
+.kismo-avatar.tie {
+  filter: grayscale(1);
+}
+.kismo-avatar.idle {
+  filter: none;
+}
+
+@keyframes winnerGlow {
+  from {
+    text-shadow: 0 0 0 #de0b59;
+  }
+  to {
+    text-shadow: 0 0 24px #de0b59, 0 0 40px #32b2ea;
+  }
+}
+
+@keyframes loserShake {
+  10% {
+    transform: translateX(-5px);
+  }
+  20% {
+    transform: translateX(6px);
+  }
+  30% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  50% {
+    transform: none;
+  }
+}
+@media (max-width: 500px) {
+  .reset-btn {
+    width: 92vw;
+    max-width: 400px;
+    font-size: 1.05rem;
+  }
+}
+
+/* Neon Glow (πάντα ενεργό) */
+.reset-btn {
+  transition: box-shadow 0.2s, transform 0.15s;
+  box-shadow: 0 0 18px #de0b59, 0 0 6px #32b2ea;
+}
+
+/* Bouncy και έξτρα Glow όταν πατιέται */
+.reset-btn:active {
+  animation: bounceBtn 0.36s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  box-shadow: 0 0 34px #de0b59, 0 0 20px #32b2ea, 0 0 8px #fff;
+  transform: scale(1.1) rotate(-2deg);
+}
+
+@keyframes bounceBtn {
+  0% {
+    transform: scale(1) rotate(0);
+  }
+  25% {
+    transform: scale(1.12) rotate(-3deg);
+  }
+  45% {
+    transform: scale(0.93) rotate(2deg);
+  }
+  70% {
+    transform: scale(1.06) rotate(-2deg);
+  }
+  100% {
+    transform: scale(1.01) rotate(0);
+  }
+}
+body {
+  background: #151620 !important;
+}
+
+html,
+body,
+#root {
+  min-height: 100vh;
+  height: 100%;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.scoreboard {
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 1.35rem;
+  text-align: center;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.03em;
+  text-shadow: 0 0 8px #de0b59, 0 0 2px #32b2ea, 0 1px 0 #000;
+}
+/* --- SHAAKE! --- */
+@keyframes shake {
+  0% {
+    transform: translate(0, 0) rotate(0);
+  }
+  10% {
+    transform: translate(-6px, 2px) rotate(-1deg);
+  }
+  20% {
+    transform: translate(5px, -2px) rotate(1deg);
+  }
+  30% {
+    transform: translate(-3px, 1px) rotate(0deg);
+  }
+  40% {
+    transform: translate(4px, -3px) rotate(1deg);
+  }
+  50% {
+    transform: translate(-5px, 2px) rotate(-1deg);
+  }
+  60% {
+    transform: translate(4px, -2px) rotate(0deg);
+  }
+  70% {
+    transform: translate(-3px, 1px) rotate(-1deg);
+  }
+  80% {
+    transform: translate(5px, -1px) rotate(1deg);
+  }
+  90% {
+    transform: translate(-4px, 2px) rotate(0deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0);
+  }
+}
+
+.shake-effect {
+  animation: shake 0.7s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+.intro-overlay {
+  position: fixed;
+  z-index: 2000;
+  inset: 0;
+  background: rgba(20, 10, 35, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: introIn 0.8s;
+}
+@keyframes introIn {
+  0% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.intro-box {
+  background: #151620;
+  border-radius: 2rem;
+  box-shadow: 0 0 24px #de0b59, 0 0 6px #32b2ea;
+  padding: 2.5rem 2.2rem;
+  text-align: center;
+  min-width: 260px;
+  max-width: 90vw;
+}
+.intro-quote {
+  color: #fff;
+  font-size: 1.4rem;
+  margin: 1.2rem 0 2.1rem 0;
+  font-weight: 600;
+  text-shadow: 0 0 8px #de0b59, 0 0 2px #32b2ea;
+  letter-spacing: 0.5px;
+}
+.intro-buttons {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+}
+.intro-btn {
+  padding: 0.8rem 2.3rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-radius: 1.5rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 12px #de0b59, 0 0 4px #32b2ea;
+  background: #1d1a24;
+  color: #de0b59;
+  transition: 0.13s;
+}
+.intro-btn.intro-yes {
+  background: linear-gradient(90deg, #de0b59 80%, #32b2ea 120%);
+  color: #fff;
+  box-shadow: 0 0 16px #de0b59, 0 0 8px #32b2ea;
+}
+.intro-btn.intro-no {
+  background: #2b2437;
+  color: #de0b59;
+  opacity: 0.8;
+}
+.intro-btn:hover {
+  filter: brightness(1.09) saturate(1.13);
+  transform: scale(1.04);
+}
+.intro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #151620;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.intro-text {
+  margin-top: 1.5rem;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+}
+
+.intro-text h2 {
+  color: #de0b59;
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 2.2rem;
+  text-shadow: 0 0 8px #de0b59, 0 0 24px #32b2ea;
+  letter-spacing: 0.5px;
+}
+
+.intro-text .reset-btn {
+  margin: 0 10px;
+  min-width: 100px;
+  padding: 0.85rem 0;
+  font-size: 1.15rem;
+}
+
+@media (max-width: 600px) {
+  .intro-text h2 {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .intro-text .reset-btn {
+    min-width: 80px;
+    padding: 0.65rem 0;
+    font-size: 1rem;
+  }
+}
+@keyframes neon-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 20px #de0b59, 0 0 40px #32b2ea;
+    border-color: #de0b59;
+  }
+  50% {
+    box-shadow: 0 0 60px #de0b59, 0 0 90px #32b2ea, 0 0 120px #fff;
+    border-color: #fff;
+  }
+}
+
+.reset-btn.neon-pulse {
+  animation: neon-pulse 1.1s infinite alternate;
+  transition: box-shadow 0.3s, border-color 0.3s;
+}

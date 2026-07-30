@@ -1,0 +1,34 @@
+.kismo-avatar-neon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 1.5rem auto 1.5rem auto;
+  position: relative;
+}
+
+.kismo-avatar-img {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  border: 5px solid #de0b59;
+  box-shadow: 0 0 36px 12px #de0b59, 0 0 48px 0 #de0b5933;
+  background: #191929;
+  object-fit: cover;
+  transition: box-shadow 0.4s;
+  z-index: 1;
+}
+
+.kismo-avatar-neon.pulse .kismo-avatar-img {
+  animation: neon-pulse 0.55s;
+}
+@keyframes neon-pulse {
+  0% {
+    box-shadow: 0 0 36px 12px #de0b59, 0 0 48px 0 #de0b5933;
+  }
+  50% {
+    box-shadow: 0 0 80px 36px #de0b59, 0 0 128px 24px #de0b5999;
+  }
+  100% {
+    box-shadow: 0 0 36px 12px #de0b59, 0 0 48px 0 #de0b5933;
+  }
+}

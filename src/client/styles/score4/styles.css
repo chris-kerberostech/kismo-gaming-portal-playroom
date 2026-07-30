@@ -1,0 +1,45 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+.user-avatar {
+  position: relative;
+  background: #222;
+  transition: all 0.33s cubic-bezier(0.55, 1.8, 0.52, 0.91);
+}
+.user-avatar.glowing.active {
+  animation: avatarGlow 1.4s infinite alternate;
+}
+@keyframes avatarGlow {
+  0% {
+    box-shadow: 0 0 24px #de0b59, 0 0 36px #32b2ea;
+  }
+  100% {
+    box-shadow: 0 0 44px #de0b59, 0 0 70px #32b2ea;
+  }
+}
+.neon-nickname {
+  animation: nicknameNeon 1.2s infinite alternate;
+}
+@keyframes nicknameNeon {
+  0% {
+    text-shadow: 0 0 12px #de0b59, 0 0 24px #32b2ea;
+  }
+  100% {
+    text-shadow: 0 0 28px #de0b59, 0 0 46px #32b2ea;
+  }
+}
+@keyframes spark-glow {
+  0% {
+    filter: drop-shadow(0 0 0px #de0b59);
+    transform: scale(1);
+  }
+  60% {
+    filter: drop-shadow(0 0 16px #de0b59);
+    transform: scale(1.27);
+  }
+  100% {
+    filter: drop-shadow(0 0 0px #de0b59);
+    transform: scale(1);
+  }
+}

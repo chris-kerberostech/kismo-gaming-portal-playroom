@@ -1,0 +1,51 @@
+.overlay-banner {
+  position: fixed;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 18px #de0b59, 0 0 8px #32b2ea;
+  padding: 1.4rem 4rem;
+  border-radius: 32px;
+  background: rgba(30, 0, 35, 0.95);
+  border: 4px solid #de0b59;
+  box-shadow: 0 0 44px #de0b59, 0 0 18px #32b2ea;
+  animation: banner-fade-in 0.5s, banner-fade-out 0.4s 1.6s forwards;
+  pointer-events: none;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+@keyframes banner-fade-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -70%) scale(0.85);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+@keyframes banner-fade-out {
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+.overlay-banner.victory {
+  color: #fff;
+  border-color: #de0b59;
+  text-shadow: 0 0 24px #de0b59, 0 0 14px #fff, 0 0 8px #32b2ea;
+}
+.overlay-banner.defeat {
+  color: #de0b59;
+  border-color: #222;
+  text-shadow: 0 0 18px #de0b59, 0 0 8px #fff;
+}
+.overlay-banner.draw {
+  color: #32b2ea;
+  border-color: #32b2ea;
+  text-shadow: 0 0 18px #32b2ea, 0 0 8px #fff;
+}

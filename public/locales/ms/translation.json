@@ -1,0 +1,72 @@
+{
+  "abitlonelyhere": "Agak sunyi di sini…",
+  "wanttoplayagame": "Nak main?",
+  "letsplay": "Jom bermain!",
+  "gameover": "Permainan Tamat",
+  "yourwinner": "Awak pemenang!",
+  "yes": "Ya",
+  "no": "Tidak",
+  "you": "Awak",
+  "letsraisethestakes": "Naikkan taruhan!",
+  "newgame": "Permainan Baharu",
+  "startover": "Mula Semula",
+  "victory": "Kemenangan",
+  "defeat": "Kekalahan",
+  "draw": "Seri",
+  "intro": {
+    "kismotalk1": "Sedia main dengan aku, si kecil?",
+    "kismotalk2": "Aku tunggu di sini… bila saja kau sedia. 🐾",
+    "foreverywin": "untuk setiap kemenangan!"
+  },
+  "victoryQuotes": {
+    "1": "Awak menang… kali ini. Aku yang biarkan, kucing kecil. 😉",
+    "2": "Baiklah… awak kalahkan aku. Nikmatilah.",
+    "3": "Nak ganjaran untuk itu? Mari sini.",
+    "4": "Kali ini kau dapat aku. Pusingan seterusnya, kau milikku.😏",
+    "5": "Tsk, makin menunjuk-nunjuk ya, huh?",
+    "6": "Nak aku ganjar… atau hukum kau? 😈",
+    "7": "Jangan biasakan diri. Aku selalu kembali lebih kuat.💋"
+  },
+  "defeatQuotes": {
+    "1": "Siapa bos sekarang?",
+    "2": "Nasib lebih baik lain kali, Vixen kecil.",
+    "3": "Cuba lagi. Kau comel bila kalah.",
+    "4": "Terlalu mudah. Merayu untuk perlawanan semula?😉",
+    "5": "Rebah, kucing kecil.",
+    "6": "Aku menang permainan ini, dan kau.",
+    "7": "Awak bagi aku menang tadi kan? Comel.💖"
+  },
+  "tieQuotes": {
+    "1": "Seri? Ayuh, buat aku rasa sesuatu.",
+    "2": "Tiada pemenang? Penggoda.",
+    "3": "Mari panaskan lagi lain kali."
+  },
+  "starterQuotes": {
+    "1": "Tengok dulu kalau kau boleh tangani aku.",
+    "2": "Kau suka sedikit bahaya, huh?",
+    "3": "Sedia untuk didominasi, sayang?",
+    "4": "Fikir boleh kalahkan aku? Buktikan.",
+    "5": "Giliran aku. Tengok betul-betul, sayang.",
+    "6": "Ingat aku biar kau menang?",
+    "7": "Hampir… tapi masih milikku, huh?",
+    "8": "Tunjuk apa yang kau ada, kucing kecil.",
+    "9": "Jangan merayu belas kasihan… lagi.",
+    "10": "Ini permainan aku. Sedia untuk kalah?",
+    "11": "Kau betul-betul fikir boleh handle aku?",
+    "12": "Hati-hati, aku menggigit semula.",
+    "13": "Aku akan buat kau berusaha untuknya, babe.",
+    "14": "Datang dekat. Aku nak tengok kau cuba.",
+    "15": "Nak menang atau cuma rasa perhatian aku?",
+    "16": "Jangan biar aku menunggu…",
+    "17": "Kau suka digoda, kan?",
+    "18": "Kalau kau menang, mungkin aku lembut pada kau. Mungkin.",
+    "19": "Mari naikkan suhunya.",
+    "20": "Itu takut, atau kau cuma teruja?",
+    "21": "Ini akan seronok… untuk aku."
+  },
+  "raiseBetQuotes": {
+    "1": "Nak naikkan taruhan, kucing kecil? Setiap menang = +2 sparks, tapi kalau kalah, aku ambil satu balik. Boleh ke?",
+    "2": "Mari jadikan ia pedas. Double or nothing… atau patut aku kata, sparks atau sakit? 💋",
+    "3": "Naikkan taruhan, babe. Buat aku berusaha—atau biar aku ambil apa yang milik aku."
+  }
+}

@@ -1,0 +1,56 @@
+{
+    "abitlonelyhere": "È un po' solitario qui ...",
+    "wanttoplayagame": "Vuoi giocare a un gioco?",
+    "letsplay": "Giochiamo!",
+    "gameover": "Fine del gioco",
+    "yourewinner": "Sei un vincitore!",
+    "yes": "Sì",
+    "no": "No",
+    "you": "Tu",
+    "letsraisethestakes": "Alziamo la posta!",
+    "newgame": "Nuovo gioco",
+    "startover": "Inizia da capo",
+    "victory": "Vittoria",
+    "defeat": "Sconfitta",
+    "draw": "Pareggio",
+    "intro": {
+        "kismotalk1": "Pronto a giocare con me, piccolo?",
+        "kismotalk2": "Sarò qui ad aspettarti... quando sarai pronto 🦊",
+        "foreverywin": "per ogni vittoria!"
+    },
+    "victoryQuotes": {
+        "1": "Vinici... questa volta. Ti ho lasciato fare, gattino 😏",
+        "2": "Va bene... mi hai preso. Gustalo.",   
+        "3": "Vuoi una ricompensa per questo? Vieni qui.",
+        "4": "Mi hai preso questa volta. Al prossimo round, sei mio 😏"
+    },  
+    "defeatQuotes": {
+        "1": "Chi è il capo adesso?",
+        "2": "Meglio fortuna la prossima volta, piccola volpe.",
+        "3": "Riprova. Sei carino quando perdi.",
+        "4": "Troppo facile. Prega per una rivincita 😏"
+    },
+    "tieQuotes": {
+        "1": "Un pareggio? Dai, fammi sentire qualcosa.",
+        "2": "Nessuno vince? Sei un monello.",
+        "3": "Rendiamolo più piccante la prossima volta."
+    },
+    "starterQuotes": {
+        "1": "Fammi vedere se puoi gestirmi.",
+        "2": "Ti piace un po' di pericolo, eh?",
+        "3": "Pronto a essere dominato, piccola?",
+        "4": "Pensi di poter battermi? Provalo.",
+        "5": "È il mio turno. Guarda bene, piccola...",
+        "6": "Hai davvero pensato che ti avrei lasciato vincere?",
+        "7": "Così vicino... ma ancora mio, eh?",
+        "8": "Vediamo cosa hai, gattino.",
+        "9": "Cerca di non implorare pietà... ancora.",
+        "10": "È il mio gioco adesso. Pronto a perdere?",
+        "11": "Pensi davvero di poter gestirmi?",
+        "12": "Attento, mordo anch'io.",
+        "13": "Ti farò lavorare per questo, tesoro.",
+        "14": "Avvicinati. Voglio vederti provare.",
+        "15": "Vuoi vincere o solo sentire la mia attenzione?",
+        "16": "Non farmi aspettare..."
+    }
+}

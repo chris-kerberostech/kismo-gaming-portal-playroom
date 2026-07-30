@@ -1,0 +1,72 @@
+{
+    "abitlonelyhere": "It's a bit lonely here ...",
+    "wanttoplayagame": "Want to play a game ?",
+    "letsplay": "Let's play!",
+    "gameover": "Game Over",
+    "yourewinner": "You're a Winner!",
+    "yes": "Yes",
+    "no": "No",
+    "you": "You",
+    "letsraisethestakes": "Let's raise the stakes!",
+    "newgame": "New Game",
+    "startover": "Start Over",
+    "victory": "Victory",
+    "defeat": "Defeat",
+    "draw": "Draw",
+    "intro": {
+        "kismotalk1": "Ready to play with me, little one?",
+        "kismotalk2": "I’ll be here waiting for you… whenever you’re ready. 🦊",
+        "foreverywin": "for every win !"
+    },
+    "victoryQuotes": {
+        "1": "You win… this time. I let you, kitten. 😏",
+        "2": "Fine… you got me. Savor it.",
+        "3": "You want a reward for that? Get over here.",
+        "4": "You got me this time. Next round, you’re mine.😏",
+        "5": "Tsk, you’re really showing off, huh?",
+        "6": "Want me to reward you… or punish you😈?",
+        "7": "Don’t get used to it. I always come back harder💋."
+    },
+    "defeatQuotes": {
+        "1": "Who’s the boss now?",
+        "2": "Better luck next time, little vixen.",
+        "3": "Try again. You’re cute when you lose.",
+        "4": "Too easy. Beg for a rematch.😏",
+        "5": "Down, kitten.",
+        "6": "I own this game, and you.",
+        "7": "Did you just let me win? Cute.💖"
+    },
+    "tieQuotes": {
+        "1": "A draw? Come on, make me feel something.",
+        "2": "Nobody wins? You tease.",
+        "3": "Let’s spice it up next time."
+    },
+    "starterQuotes": {
+        "1": "Let me see if you can handle me.",
+        "2": "You love a little danger, huh?",
+        "3": "Ready to get dominated, baby?",
+        "4": "Think you can beat me? Prove it.",
+        "5": "It's my turn. Watch closely, baby…",
+        "6": "You really thought I'd let you win?",
+        "7": "So close. But still mine, huh?",
+        "8": "Let’s see what you’ve got, kitten.",
+        "9": "Try not to beg for mercy… yet.",
+        "10": "It’s my game now. Ready to lose?",
+        "11": "You really think you can handle me?",
+        "12": "Careful, I bite back.",
+        "13": "I’ll make you work for it, babe.",
+        "14": "Come closer. I want to watch you try.",
+        "15": "You want to win or just feel my attention?",
+        "16": "Don’t keep me waiting…",
+        "17": "You like being teased, don’t you?",
+        "18": "If you win, I might go easy on you. Might.",
+        "19": "Let’s turn up the heat.",
+        "20": "Is that fear, or are you just excited?",
+        "21": "This is going to be fun… for me."
+    },
+    "raiseBetQuotes": {
+        "1": "Wanna raise the stakes, kitten? Every win is +2 sparks, but if you lose, I’ll take one back. Think you can handle that? 😈",
+        "2": "Let’s make it spicy. Double or nothing… or should I say, sparks or pain? 💋",
+        "3": "Raise the bet, babe. Make me work for it—or let me take what’s mine."
+    }
+}

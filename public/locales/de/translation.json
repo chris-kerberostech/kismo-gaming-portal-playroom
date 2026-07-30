@@ -1,0 +1,72 @@
+{
+    "abitlonelyhere": "Hier ist es ein bisschen einsam...",
+    "wanttoplayagame": "Willst du ein Spiel spielen?",
+    "letsplay": "Lass uns spielen!",
+    "gameover": "Spiel vorbei",
+    "yourewinner": "Du bist der Gewinner!",
+    "yes": "Ja",
+    "no": "Nein",
+    "you": "Du",
+    "letsraisethestakes": "Lass uns den Einsatz erhöhen!",
+    "newgame": "Neues Spiel",
+    "startover": "Neu starten",
+    "victory": "Sieg",
+    "defeat": "Niederlage",
+    "draw": "Unentschieden",
+    "intro": {
+        "kismotalk1": "Bereit, mit mir zu spielen, Kleines?",
+        "kismotalk2": "Ich werde hier auf dich warten… wann immer du bereit bist 🦊",
+        "foreverywin": "für jeden Sieg!"
+    },
+    "victoryQuotes": {
+        "1": "Du gewinnst… dieses Mal. Ich habe dich gelassen, Kätzchen 😏",
+        "2": "Na gut… du hast mich erwischt. Genieß es.",
+        "3": "Willst du dafür eine Belohnung? Komm her.",
+        "4": "Diesmal hast du mich. Nächste Runde gehörst du mir 😏",
+        "5": "Tsk… du zeigst dich ja richtig, hm?",
+        "6": "Willst du, dass ich dich belohne… oder bestrafe 😈?",
+        "7": "Gewöhn dich nicht daran. Ich komme immer härter zurück 💋"
+    },
+    "defeatQuotes": {
+        "1": "Wer ist jetzt der Boss?",
+        "2": "Mehr Glück beim nächsten Mal, kleine Vixen.",
+        "3": "Versuch’s nochmal. Du bist süß, wenn du verlierst.",
+        "4": "Zu einfach. Bettel um ein Rematch 😏",
+        "5": "Runter, Kätzchen.",
+        "6": "Dieses Spiel gehört mir… und du auch.",
+        "7": "Hast du mich gerade gewinnen lassen? Süß 💖"
+    },
+    "tieQuotes": {
+        "1": "Ein Unentschieden? Komm schon, lass mich etwas fühlen.",
+        "2": "Niemand gewinnt? Du kleine Verführerin.",
+        "3": "Lass es uns nächstes Mal spannender machen."
+    },
+    "starterQuotes": {
+        "1": "Mal sehen, ob du mit mir umgehen kannst.",
+        "2": "Du liebst ein kleines bisschen Gefahr, hm?",
+        "3": "Bereit, dominiert zu werden, Baby?",
+        "4": "Denkst du, du kannst mich schlagen? Beweis es.",
+        "5": "Ich bin dran. Sieh genau hin, Baby…",
+        "6": "Dachtest du wirklich, ich lasse dich gewinnen?",
+        "7": "So nah… aber immer noch mein, hm?",
+        "8": "Zeig mir, was du drauf hast, Kätzchen.",
+        "9": "Versuch, noch nicht um Gnade zu betteln…",
+        "10": "Jetzt ist es mein Spiel. Bereit zu verlieren?",
+        "11": "Denkst du wirklich, du kannst mich handhaben?",
+        "12": "Vorsicht, ich beiße zurück.",
+        "13": "Ich werde dich dafür arbeiten lassen, Liebling.",
+        "14": "Komm näher. Ich will zusehen, wie du es versuchst.",
+        "15": "Willst du gewinnen oder nur meine Aufmerksamkeit fühlen?",
+        "16": "Lass mich nicht warten…",
+        "17": "Du wirst gern geneckt, oder?",
+        "18": "Wenn du gewinnst, bin ich vielleicht sanft zu dir… vielleicht.",
+        "19": "Lass uns die Hitze erhöhen.",
+        "20": "Ist das Angst… oder nur Aufregung?",
+        "21": "Das wird Spaß machen… für mich."
+    },
+    "raiseBetQuotes": {
+        "1": "Willst du den Einsatz erhöhen, Kätzchen? Jeder Sieg = +2 sparks, aber wenn du verlierst, nehme ich einen zurück. Meinst du, du schaffst das? 😈",
+        "2": "Lass es uns würziger machen. Doppelt oder nichts… oder sollte ich sagen, sparks oder Schmerz? 💋",
+        "3": "Erhöhe den Einsatz, Liebling. Lass mich dafür arbeiten – oder lass mich nehmen, was mir gehört."
+    }
+}
