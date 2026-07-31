@@ -439,33 +439,6 @@ export default function Score4() {
             <audio ref={vDuring1Ref} src="/score4Assets/sounds/duringGame.wav" preload="auto" />
             <audio ref={vDuring2Ref} src="/score4Assets/sounds/duringGame2.wav" preload="auto" />
 
-            {/* Close */}
-            <button
-                onClick={() => (setGamePlayed(GamePlayedType.NONE))}
-                className="close-btn"
-                aria-label="Close Game"
-                style={{
-                    position: "absolute",
-                    top: 20,
-                    right: 24,
-                    zIndex: 50,
-                    background: "rgba(21,22,32,0.89)",
-                    border: "2px solid #de0b59",
-                    borderRadius: "50%",
-                    width: 44,
-                    height: 44,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 24,
-                    color: "#fff",
-                    cursor: "pointer",
-                    boxShadow: "0 0 16px #de0b59, 0 0 12px #32b2ea",
-                    transition: "all .18s cubic-bezier(.55,1.8,.52,.91)",
-                }}
-            >
-                ×
-            </button>
             {/* Mute */}
             <button
                 onClick={() => setSoundOn((p) => !p)}
@@ -623,7 +596,6 @@ export default function Score4() {
                         setShowNewGamePopup(false);
                     }}
                     onStartOverPressed={() => {
-                        setGamePlayed(GamePlayedType.NONE);
                         setShowNewGamePopup(false);
                     }} />
             )}
