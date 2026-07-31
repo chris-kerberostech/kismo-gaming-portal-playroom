@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 
 import { names, type ChatMessage, type Message } from "../shared";
 // @ts-expect-error - JS context module is intentionally imported from transferred game sources.
-import GamesContextProvider from "./contexts/Score4Context";
+import Score4ContextProvider from "./contexts/Score4Context";
 // @ts-expect-error - JSX game module is intentionally imported from transferred game sources.
 import Score4 from "./games/Score4";
 
@@ -139,9 +139,9 @@ function PortalApp() {
 			<main className={`portal-main ${isChatOpen ? "chat-open" : "chat-closed"}`}>
 				{isChatOpen ? <ChatPanel room={bootstrapOptions.room} /> : null}
 				<section className="portal-game-panel" aria-label="Score4 game area">
-					<GamesContextProvider>
+					<Score4ContextProvider>
 						<Score4 />
-					</GamesContextProvider>
+					</Score4ContextProvider>
 				</section>
 			</main>
 		</div>

@@ -10,7 +10,7 @@ import heartPixel from "../components/score4/heartPixel.png";
 import "../styles/score4/board.css";
 import "../styles/score4/styles.css";
 import { useTranslation } from 'react-i18next';
-import { GamesContext, GamePlayedType } from "../contexts/Score4Context";
+import { Score4Context, GamePlayedType } from "../contexts/Score4Context";
 import { COLOR_PLAYER, COLOR_KISMO, VOICE_VOL } from "../Constants";
 import NewGameAlert from "../components/score4/NewGameAlert";
 
@@ -148,7 +148,7 @@ export default function Score4() {
     // ========== i18n ==========
     const { t, i18n } = useTranslation();
     // chris: Quotes are loaded from the GameContext
-    const { victoryQuotes, defeatQuotes, tieQuotes, starterQuotes, raiseBetQuote } = useContext(GamesContext);
+    const { victoryQuotes, defeatQuotes, tieQuotes, starterQuotes, raiseBetQuote } = useContext(Score4Context);
 
 
     // ---------- GAME ----------
@@ -187,7 +187,7 @@ export default function Score4() {
     // chris: update : use the values from the context
     // const [userAvatarUrl, setUserAvatarUrl] = useState("https://i.pravatar.cc/150?img=5");
     // const [userNickname, setUserNickname] = useState("User");
-    const { userAvatarUrl, userNickname, userScore, gamePlayed, setGamePlayed, updateUserScore } = useContext(GamesContext);
+    const { userAvatarUrl, userNickname, userScore, gamePlayed, setGamePlayed, updateUserScore } = useContext(Score4Context);
 
     // ---------- SESSION SPARKS ----------
     // chris: session sparks are the sparks you earn during a game session
@@ -428,16 +428,16 @@ export default function Score4() {
             style={{ position: "relative" }}
         >
             {/* base sounds */}
-            <audio ref={userSoundRef} src="/UserturnSound.mp3" />
-            <audio ref={kismoSoundRef} src="/KismoTurnSound.mp3" />
+            <audio ref={userSoundRef} src="/score4Assets/sounds/UserturnSound.mp3" />
+            <audio ref={kismoSoundRef} src="/score4Assets/sounds/KismoTurnSound.mp3" />
 
             {/* voice sounds */}
-            <audio ref={vWinRef} src="/win.wav" preload="auto" />
-            <audio ref={vLostRef} src="/lost.wav" preload="auto" />
-            <audio ref={vBlockUserRef} src="/3dotsbtUser.wav" preload="auto" />
-            <audio ref={vBlockedByUserRef} src="/blockedbyUser.wav" preload="auto" />
-            <audio ref={vDuring1Ref} src="/duringGame.wav" preload="auto" />
-            <audio ref={vDuring2Ref} src="/duringGame2.wav" preload="auto" />
+            <audio ref={vWinRef} src="/score4Assets/sounds/win.wav" preload="auto" />
+            <audio ref={vLostRef} src="/score4Assets/sounds/lost.wav" preload="auto" />
+            <audio ref={vBlockUserRef} src="/score4Assets/sounds/3dotsbtUser.wav" preload="auto" />
+            <audio ref={vBlockedByUserRef} src="/score4Assets/sounds/blockedbyUser.wav" preload="auto" />
+            <audio ref={vDuring1Ref} src="/score4Assets/sounds/duringGame.wav" preload="auto" />
+            <audio ref={vDuring2Ref} src="/score4Assets/sounds/duringGame2.wav" preload="auto" />
 
             {/* Close */}
             <button

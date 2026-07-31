@@ -262,6 +262,11 @@ function addAuthCookie(response: Response, secure: boolean): Response {
 	});
 }
 
+function requiresAuth(pathname: string): boolean {
+	// Protect realtime/game endpoints while keeping static assets publicly readable.
+	return pathname.startsWith("/parties/");
+}
+
 export class Chat extends Server<Env> {
 	static options = { hibernate: true };
 
@@ -336,6 +341,7 @@ export class Chat extends Server<Env> {
 export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
+		const pathRequiresAuth = requiresAuth(url.pathname);
 		const traceId = crypto.randomUUID().slice(0, 8);
 		const isSecureRequest = url.protocol === "https:";
 		const cookies = parseCookies(request.headers.get("Cookie"));
@@ -348,9 +354,20 @@ export default {
 			traceId,
 			method: request.method,
 			path: url.pathname,
+			requiresAuth: pathRequiresAuth,
 			hasAuthCookie: alreadyAuthorized,
 			hasToken: token.length > 0,
 		});
+
+		if (!pathRequiresAuth) {
+			authLog("info", "request_allowed", {
+				traceId,
+				target: "assets",
+				path: url.pathname,
+				auth: "not_required",
+			});
+			return env.ASSETS.fetch(request);
+		}
 
 		if (!alreadyAuthorized) {
 			if (!token) {

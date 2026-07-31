@@ -15,7 +15,7 @@
 		"not_found_handling": "single-page-application"
 	},
 	"build": {
-		"command": "esbuild src/client/index.tsx --bundle --splitting --format=esm --platform=browser --loader:.js=jsx --loader:.png=file --outdir=public/dist"
+		"command": "esbuild src/client/index.tsx --bundle --splitting --format=esm --platform=browser --loader:.js=jsx --loader:.png=file --public-path=/dist --outdir=public/dist"
 	},
 	"durable_objects": {
 		"bindings": [

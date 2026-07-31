@@ -54,7 +54,7 @@ export const GamePlayedType = {
     SCORE4: 'SCORE4',
 }
 
-const GamesContextType = {
+const Score4ContextType = {
     gamePlayed: GamePlayedType.NONE,
     setGamePlayed: () => { },
     userScore: 0,
@@ -69,9 +69,9 @@ const GamesContextType = {
     updateUserScore: (newScore) => { },
 };
 
-export const GamesContext = React.createContext(GamesContextType);
+export const Score4Context = React.createContext(Score4ContextType);
 
-const GamesContextProvider = ({ children }) => {
+const Score4ContextProvider = ({ children }) => {
     const [userScore, setUserScore] = useState(0);
     const [userLocale, setUserLocale] = useState('en');
     const [userAvatarUrl, setUserAvatarUrl] = useState("https://i.pravatar.cc/150?img=5");
@@ -202,13 +202,17 @@ const GamesContextProvider = ({ children }) => {
         sendMessageToNative("UPDATE_SCORE", { userScore: newScore });
     }
 
-    return <GamesContext.Provider value={{
+    return <Score4Context.Provider value={{
         victoryQuotes, defeatQuotes, tieQuotes, starterQuotes, raiseBetQuote,
         userScore, userLocale, userAvatarUrl, userNickname, gamePlayed, 
         setGamePlayed, updateUserScore
     }}>
         {children}
-    </GamesContext.Provider>;
+    </Score4Context.Provider>;
 };
 
-export default GamesContextProvider;
+// Backward-compatible aliases for older imports.
+export const GamesContext = Score4Context;
+export const GamesContextProvider = Score4ContextProvider;
+
+export default Score4ContextProvider;
