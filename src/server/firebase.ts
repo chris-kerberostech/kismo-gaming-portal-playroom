@@ -16,7 +16,7 @@ import {
 } from "@kismoportal-dataconnect/generated";
 
 export type FirebaseEnv = {
-	FIREBASE_SERVICE_ACCOUNT_JSON?: string;
+	FIREBASE_SERVICE_ACCOUNT_JSON?: string | Record<string, unknown>;
 	NEXT_PUBLIC_FIREBASE_API_KEY?: string;
 	NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN?: string;
 	NEXT_PUBLIC_FIREBASE_PROJECT_ID?: string;
@@ -54,9 +54,22 @@ function getRequiredEnv(name: keyof FirebaseEnv, env?: FirebaseEnv): string {
 	return value;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 function getServiceAccount(env?: FirebaseEnv): ServiceAccount {
-	const json = getRequiredEnv("FIREBASE_SERVICE_ACCOUNT_JSON", env);
-	return JSON.parse(json) as ServiceAccount;
+	const raw = env?.FIREBASE_SERVICE_ACCOUNT_JSON;
+
+	if (typeof raw === "string" && raw.length > 0) {
+		return JSON.parse(raw) as ServiceAccount;
+	}
+
+	if (isRecord(raw)) {
+		return raw as ServiceAccount;
+	}
+
+	throw new Error("Missing FIREBASE_SERVICE_ACCOUNT_JSON environment variable");
 }
 
 function ensureAdminClients(env?: FirebaseEnv) {
