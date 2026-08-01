@@ -1,11 +1,16 @@
 {
 	"compatibility_date": "2025-10-08",
-	"compatibility_flags": ["nodejs_compat"],
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
 	"main": "src/server/index.ts",
 	"name": "kismo-gaming-portal-playroom",
+	"keep_vars": true,
 	"migrations": [
 		{
-			"new_sqlite_classes": ["Chat"],
+			"new_sqlite_classes": [
+				"Chat"
+			],
 			"tag": "v1"
 		}
 	],
