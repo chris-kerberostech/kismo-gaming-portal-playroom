@@ -198,4 +198,3 @@ dist
 .dev.vars*
 !.dev.vars.example
 .wrangler.json
-wrangler.json

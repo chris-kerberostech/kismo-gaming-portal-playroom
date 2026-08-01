@@ -1,0 +1,46 @@
+{
+	"compatibility_date": "2025-10-08",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"main": "src/server/index.ts",
+	"name": "kismo-gaming-portal-playroom",
+	"keep_vars": true,
+	"migrations": [
+		{
+			"new_sqlite_classes": [
+				"Chat"
+			],
+			"tag": "v1"
+		}
+	],
+	"assets": {
+		"directory": "./public",
+		"binding": "ASSETS",
+		"not_found_handling": "single-page-application"
+	},
+	"build": {
+		"command": "esbuild src/client/index.tsx --bundle --splitting --format=esm --platform=browser --loader:.js=jsx --loader:.png=file --public-path=/dist --outdir=public/dist"
+	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"class_name": "Chat",
+				"name": "Chat"
+			}
+		]
+	},
+	"observability": {
+		"enabled": true
+	},
+	"upload_source_maps": true,
+	"vars": {
+		"NEXT_PUBLIC_FIREBASE_API_KEY": "AIzaSyBekRneIngl5Bqi6ciqYdh0vgDIlCVODas",
+		"NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN": "kismo-app.firebaseapp.com",
+		"NEXT_PUBLIC_FIREBASE_PROJECT_ID": "kismo-app",
+		"NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET": "kismo-app.firebasestorage.app",
+		"NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "292026035680",
+		"NEXT_PUBLIC_FIREBASE_APP_ID": "1:292026035680:web:439334b170b47dde7bcf85",
+		"NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID": "G-XWW4MVVMSN"
+	}
+}
