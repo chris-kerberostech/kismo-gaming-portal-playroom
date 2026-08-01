@@ -58,15 +58,45 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function normalizePrivateKey(value: string): string {
+	return value.replace(/\\n/g, "\n").replace(/\r\n/g, "\n");
+}
+
+function normalizeServiceAccount(value: unknown): ServiceAccount {
+	if (!isRecord(value)) {
+		throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON must be an object");
+	}
+
+	const projectId = value.projectId ?? value.project_id;
+	const clientEmail = value.clientEmail ?? value.client_email;
+	const privateKey = value.privateKey ?? value.private_key;
+
+	if (
+		typeof projectId !== "string" ||
+		typeof clientEmail !== "string" ||
+		typeof privateKey !== "string"
+	) {
+		throw new Error(
+			"FIREBASE_SERVICE_ACCOUNT_JSON is missing required fields (project_id/client_email/private_key)",
+		);
+	}
+
+	return {
+		projectId,
+		clientEmail,
+		privateKey: normalizePrivateKey(privateKey),
+	};
+}
+
 function getServiceAccount(env?: FirebaseEnv): ServiceAccount {
 	const raw = env?.FIREBASE_SERVICE_ACCOUNT_JSON;
 
 	if (typeof raw === "string" && raw.length > 0) {
-		return JSON.parse(raw) as ServiceAccount;
+		return normalizeServiceAccount(JSON.parse(raw));
 	}
 
 	if (isRecord(raw)) {
-		return raw as ServiceAccount;
+		return normalizeServiceAccount(raw);
 	}
 
 	throw new Error("Missing FIREBASE_SERVICE_ACCOUNT_JSON environment variable");
