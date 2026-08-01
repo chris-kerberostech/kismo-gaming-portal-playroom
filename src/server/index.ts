@@ -267,6 +267,10 @@ function requiresAuth(pathname: string): boolean {
 	return pathname.startsWith("/parties/");
 }
 
+function isWebSocketUpgrade(request: Request): boolean {
+	return request.headers.get("Upgrade")?.toLowerCase() === "websocket";
+}
+
 export class Chat extends Server<Env> {
 	static options = { hibernate: true };
 
@@ -342,6 +346,7 @@ export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
 		const pathRequiresAuth = requiresAuth(url.pathname);
+		const wsUpgrade = isWebSocketUpgrade(request);
 		const traceId = crypto.randomUUID().slice(0, 8);
 		const isSecureRequest = url.protocol === "https:";
 		const cookies = parseCookies(request.headers.get("Cookie"));
@@ -354,6 +359,10 @@ export default {
 			traceId,
 			method: request.method,
 			path: url.pathname,
+			isWebSocketUpgrade: wsUpgrade,
+			origin: request.headers.get("Origin") || null,
+			secFetchSite: request.headers.get("Sec-Fetch-Site") || null,
+			secFetchMode: request.headers.get("Sec-Fetch-Mode") || null,
 			requiresAuth: pathRequiresAuth,
 			hasAuthCookie: alreadyAuthorized,
 			hasToken: token.length > 0,
@@ -375,6 +384,7 @@ export default {
 					traceId,
 					reason: "missing_token",
 					path: url.pathname,
+					isWebSocketUpgrade: wsUpgrade,
 				});
 				return unauthorizedResponse();
 			}
@@ -384,12 +394,21 @@ export default {
 					traceId,
 					reason: "verification_failed",
 					path: url.pathname,
+					isWebSocketUpgrade: wsUpgrade,
 				});
 				return unauthorizedResponse();
 			}
 
 			const partykitResponse = await routePartykitRequest(request, { ...env });
 			if (partykitResponse) {
+				authLog("info", "partykit_response", {
+					traceId,
+					path: url.pathname,
+					status: partykitResponse.status,
+					isWebSocketUpgrade: wsUpgrade,
+					hasWebSocketAccept:
+						partykitResponse.headers.has("Sec-WebSocket-Accept"),
+				});
 				authLog("info", "request_allowed", {
 					traceId,
 					target: "partykit",
@@ -397,6 +416,12 @@ export default {
 				});
 				return addAuthCookie(partykitResponse, isSecureRequest);
 			}
+
+			authLog("warn", "partykit_no_match", {
+				traceId,
+				path: url.pathname,
+				isWebSocketUpgrade: wsUpgrade,
+			});
 
 			const assetsResponse = await env.ASSETS.fetch(request);
 			authLog("info", "request_allowed", {
@@ -407,9 +432,24 @@ export default {
 			return addAuthCookie(assetsResponse, isSecureRequest);
 		}
 
-		return (
-			(await routePartykitRequest(request, { ...env })) ||
-			env.ASSETS.fetch(request)
-		);
+		const partykitResponse = await routePartykitRequest(request, { ...env });
+		if (partykitResponse) {
+			authLog("info", "partykit_response", {
+				traceId,
+				path: url.pathname,
+				status: partykitResponse.status,
+				isWebSocketUpgrade: wsUpgrade,
+				hasWebSocketAccept: partykitResponse.headers.has("Sec-WebSocket-Accept"),
+			});
+			return partykitResponse;
+		}
+
+		authLog("warn", "partykit_no_match", {
+			traceId,
+			path: url.pathname,
+			isWebSocketUpgrade: wsUpgrade,
+		});
+
+		return env.ASSETS.fetch(request);
 	},
 } satisfies ExportedHandler<Env>;
