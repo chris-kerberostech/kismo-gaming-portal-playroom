@@ -189,7 +189,7 @@ function PortalApp() {
 		<div className="portal-shell">
 			<header className="portal-header">
 				<div className="portal-header-copy">
-					<h1>Score4 Arena</h1>
+					<h1>Score4 - Arena</h1>
 					<p>Single-player mode against the computer</p>
 				</div>
 				<button
