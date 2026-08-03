@@ -1,4 +1,4 @@
-const { createUserRef, createChatroomRef, joinChatroomRef, leaveChatroomRef, sendMessageRef, updateStatusRef, updateUserImageRef, upsertFriendWithRef, sendFriendWithRequestRef, acceptFriendWithRequestRef, acceptFriendWithRequestBidirectionalRef, rejectFriendWithRequestBidirectionalRef, deleteFriendWithRef, updateChatroomDetailsRef, upsertChatroomStatRef, updateCityNameRef, deleteChatroomStatRef, updateStatValueRef, upsertGlobalStatRef, openChatroomSessionRef, closeChatroomSessionRef, heartbeatChatroomSessionRef, recordChatroomVisitRef, trimOldVisitsRef, createNotificationRef, markNotificationReadRef, markAllNotificationsReadRef, initializeChatroomStatsDefaultsRef, incrementChatroomStatRef, createPlayroomSessionRef, updatePlayroomSessionDetailsRef, updatePlayroomInvitedUserJoinedAtRef, deletePlayroomInvitedUserJoinedAtRef, updatePlayroomCreatorUserHeartbeatRef, deletePlayroomCreatorUserHeartbeatRef, updatePlayroomInvitedUserHeartbeatRef, deletePlayroomInvitedUserHeartbeatRef, closePlayroomSessionRef, deletePlayroomSessionRef, getUserRef, listPublicChatroomsRef, getChatroomMessagesRef, listChatroomsByOwnerRef, listChatroomsByCityRef, searchCitiesRef, isMemberRef, getFriendWithRef, listFriendWithByUserRef, listPendingFriendRequestsReceivedRef, listAcceptedFriendConnectionsRef, listMyChatroomsRef, getGlobalStatsRef, getGlobalStatRef, listActiveSessionsByUserRef, listActiveSessionsGlobalRef, listRecentVisitedChatroomsRef, listNotificationsByRecipientRef, countUnreadNotificationsRef, listChatroomStatsByChatroomIdsRef, fetchPlayroomCreatorTokenRef, fetchPlayroomInvitedUserTokenRef, fetchPlayroomParticipantTokenRef, fetchPlayroomParticipantUserIdsRef, fetchPlayroomInvitedUserJoinedAtRef, fetchPlayroomCreatorUserHeartbeatRef, fetchPlayroomInvitedUserHeartbeatRef, listActivePlayroomSessionsByUserAndGameRef, getPlayroomSessionByPlayroomSessionIdRef, getActivePlayroomSessionByPlayroomSessionIdRef, connectorConfig } = require('../index.cjs.js');
+const { createUserRef, createChatroomRef, joinChatroomRef, leaveChatroomRef, sendMessageRef, updateStatusRef, updateUserImageRef, upsertFriendWithRef, sendFriendWithRequestRef, acceptFriendWithRequestRef, acceptFriendWithRequestBidirectionalRef, rejectFriendWithRequestBidirectionalRef, deleteFriendWithRef, updateChatroomDetailsRef, upsertChatroomStatRef, updateCityNameRef, deleteChatroomStatRef, updateStatValueRef, upsertGlobalStatRef, openChatroomSessionRef, closeChatroomSessionRef, heartbeatChatroomSessionRef, recordChatroomVisitRef, trimOldVisitsRef, createNotificationRef, markNotificationReadRef, markAllNotificationsReadRef, initializeChatroomStatsDefaultsRef, incrementChatroomStatRef, createPlayroomSessionRef, updatePlayroomSessionDetailsRef, updatePlayroomInvitedUserJoinedAtRef, deletePlayroomInvitedUserJoinedAtRef, updatePlayroomCreatorUserHeartbeatRef, deletePlayroomCreatorUserHeartbeatRef, updatePlayroomInvitedUserHeartbeatRef, deletePlayroomInvitedUserHeartbeatRef, updatePlayroomSpectatorsRef, deletePlayroomSpectatorsRef, updatePlayroomSpectatorsJoinedRef, deletePlayroomSpectatorsJoinedRef, closePlayroomSessionRef, deletePlayroomSessionRef, getUserRef, listPublicChatroomsRef, getChatroomMessagesRef, listChatroomsByOwnerRef, listChatroomsByCityRef, searchCitiesRef, isMemberRef, getFriendWithRef, listFriendWithByUserRef, listPendingFriendRequestsReceivedRef, listAcceptedFriendConnectionsRef, listMyChatroomsRef, getGlobalStatsRef, getGlobalStatRef, listActiveSessionsByUserRef, listActiveSessionsGlobalRef, listRecentVisitedChatroomsRef, listNotificationsByRecipientRef, countUnreadNotificationsRef, listChatroomStatsByChatroomIdsRef, fetchPlayroomCreatorTokenRef, fetchPlayroomInvitedUserTokenRef, fetchPlayroomParticipantTokenRef, fetchPlayroomParticipantUserIdsRef, fetchPlayroomInvitedUserJoinedAtRef, fetchPlayroomCreatorUserHeartbeatRef, fetchPlayroomInvitedUserHeartbeatRef, fetchPlayroomSpectatorsRef, fetchPlayroomSpectatorsJoinedRef, isUserInPlayroomSpectatorsRef, listActivePlayroomSessionsByUserAndGameRef, getPlayroomSessionByPlayroomSessionIdRef, getActivePlayroomSessionByPlayroomSessionIdRef, connectorConfig } = require('../index.cjs.js');
 const { validateArgs, CallerSdkTypeEnum } = require('firebase/data-connect');
 const { useDataConnectQuery, useDataConnectMutation, validateReactArgs } = require('@tanstack-query-firebase/react/data-connect');
 
@@ -298,6 +298,38 @@ exports.useDeletePlayroomInvitedUserHeartbeat = function useDeletePlayroomInvite
   return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 
+exports.useUpdatePlayroomSpectators = function useUpdatePlayroomSpectators(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return updatePlayroomSpectatorsRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useDeletePlayroomSpectators = function useDeletePlayroomSpectators(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return deletePlayroomSpectatorsRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useUpdatePlayroomSpectatorsJoined = function useUpdatePlayroomSpectatorsJoined(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return updatePlayroomSpectatorsJoinedRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useDeletePlayroomSpectatorsJoined = function useDeletePlayroomSpectatorsJoined(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return deletePlayroomSpectatorsJoinedRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
 exports.useClosePlayroomSession = function useClosePlayroomSession(dcOrOptions, options) {
   const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
   function refFactory(vars) {
@@ -474,6 +506,24 @@ exports.useFetchPlayroomCreatorUserHeartbeat = function useFetchPlayroomCreatorU
 exports.useFetchPlayroomInvitedUserHeartbeat = function useFetchPlayroomInvitedUserHeartbeat(dcOrVars, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   const ref = fetchPlayroomInvitedUserHeartbeatRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useFetchPlayroomSpectators = function useFetchPlayroomSpectators(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const ref = fetchPlayroomSpectatorsRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useFetchPlayroomSpectatorsJoined = function useFetchPlayroomSpectatorsJoined(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const ref = fetchPlayroomSpectatorsJoinedRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+exports.useIsUserInPlayroomSpectators = function useIsUserInPlayroomSpectators(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const ref = isUserInPlayroomSpectatorsRef(dcInstance, inputVars);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 

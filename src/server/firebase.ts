@@ -12,7 +12,11 @@ import { getDataConnect, type DataConnect } from "firebase/data-connect";
 
 import {
 	connectorConfig,
+	fetchPlayroomInvitedUserToken,
+	fetchPlayroomParticipantToken,
+	fetchPlayroomSpectators,
 	getActivePlayroomSessionByPlayroomSessionId,
+	isUserInPlayroomSpectators,
 } from "@kismoportal-dataconnect/generated";
 
 export type FirebaseEnv = {
@@ -57,8 +61,33 @@ export type VerifyPlayroomTokenAccessResult = {
 		dbInvitedTokenLength?: number;
 		dbInvitedTokenFingerprint?: string;
 		invitedTokenEquals?: boolean;
+		dbInvitedTokenRaw?: string | null;
 		invitedUserJoinedAt?: string | null;
 		nowIso?: string;
+		spectatorId?: string;
+		spectatorIdNormalized?: string;
+		spectatorAllowed?: boolean;
+		spectatorCheckType?: string;
+		spectatorCheckRaw?: unknown;
+		spectatorsFieldType?: string;
+		spectatorsFieldRaw?: unknown;
+		spectatorsListContains?: boolean;
+		spectatorCheckAllowedByQuery?: boolean;
+		dbSpectatorTokenExists?: boolean;
+		dbSpectatorTokenLength?: number;
+		dbSpectatorTokenFingerprint?: string;
+		dbSpectatorTokenRaw?: string | null;
+		spectatorTokenQueryById?: {
+			id: string;
+			foundSession: boolean;
+			valueWasNull: boolean;
+		};
+		sessionDatabaseId?: string;
+		invitedTokenQueryById?: {
+			id: string;
+			foundSession: boolean;
+			valueWasNull: boolean;
+		};
 	};
 	reason:
 		| "invalid_token_payload"
@@ -66,6 +95,8 @@ export type VerifyPlayroomTokenAccessResult = {
 		| "session_not_found"
 		| "creator_token_mismatch"
 		| "invited_token_mismatch"
+		| "spectator_id_missing"
+		| "spectator_not_allowed"
 		| "spectator_token_mismatch"
 		| "invited_joined_at_missing"
 		| "invited_joined_at_outside_window"
@@ -287,6 +318,118 @@ function claimValueToString(value: unknown): string | null {
 	return null;
 }
 
+// DataConnect stores some user IDs in JSON lists without UUID dashes.
+function normalizeUserIdForDataConnect(value: string): string {
+	return value.trim().replace(/-/g, "").toLowerCase();
+}
+
+function parseSpectatorAllowed(
+	value: unknown,
+	spectatorId: string,
+	spectatorIdNormalized: string,
+): boolean {
+	if (typeof value === "boolean") return value;
+	if (typeof value === "number") return value > 0;
+	if (typeof value === "string") {
+		const raw = value.trim();
+		if (!raw) return false;
+
+		const normalized = normalizeUserIdForDataConnect(raw);
+		if (raw === spectatorId || normalized === spectatorIdNormalized) return true;
+
+		const normalizedFlag = value.trim().toLowerCase();
+		return normalizedFlag === "true" || normalizedFlag === "1";
+	}
+
+	if (Array.isArray(value)) {
+		return value.some((entry) =>
+			parseSpectatorAllowed(entry, spectatorId, spectatorIdNormalized),
+		);
+	}
+
+	if (!value || typeof value !== "object") {
+		return false;
+	}
+
+	const record = value as Record<string, unknown>;
+	const prioritizedKeys = [
+		"allowed",
+		"exists",
+		"contains",
+		"isAllowed",
+		"value",
+		"result",
+		"spectatorCheck",
+	];
+
+	for (const key of prioritizedKeys) {
+		if (!Object.hasOwn(record, key)) continue;
+		if (
+			parseSpectatorAllowed(record[key], spectatorId, spectatorIdNormalized)
+		)
+			return true;
+	}
+
+	return Object.values(record).some((entry) =>
+		parseSpectatorAllowed(entry, spectatorId, spectatorIdNormalized),
+	);
+}
+
+function collectSpectatorIds(value: unknown): string[] {
+	if (typeof value === "string") {
+		const trimmed = value.trim();
+		if (!trimmed) return [];
+
+		if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+			try {
+				return collectSpectatorIds(JSON.parse(trimmed));
+			} catch {
+				// If not valid JSON, treat it as a scalar value.
+			}
+		}
+
+		return [trimmed];
+	}
+
+	if (Array.isArray(value)) {
+		return value.flatMap((entry) => collectSpectatorIds(entry));
+	}
+
+	if (!value || typeof value !== "object") {
+		return [];
+	}
+
+	const record = value as Record<string, unknown>;
+	const prioritizedKeys = [
+		"spectators",
+		"value",
+		"items",
+		"list",
+		"allowed",
+		"data",
+		"result",
+	];
+
+	for (const key of prioritizedKeys) {
+		if (Object.hasOwn(record, key)) {
+			const fromKey = collectSpectatorIds(record[key]);
+			if (fromKey.length > 0) return fromKey;
+		}
+	}
+
+	return Object.values(record).flatMap((entry) => collectSpectatorIds(entry));
+}
+
+function isSpectatorListedInField(value: unknown, spectatorIdNormalized: string): boolean {
+	if (!spectatorIdNormalized) return false;
+
+	const ids = collectSpectatorIds(value)
+		.map((id) => normalizeUserIdForDataConnect(id))
+		.filter((id) => id.length > 0);
+
+	return ids.includes(spectatorIdNormalized);
+}
+
 function resolveClaimString(
 	claims: Record<string, unknown>,
 	key: string,
@@ -394,6 +537,8 @@ export async function verifyPlayroomTokenWithDataConnect(
 export async function verifyPlayroomTokenAccessWithDataConnect(
 	token: string,
 	env?: FirebaseEnv,
+	spectatorIdFromUrl?: string,
+	includeSensitiveDebug = false,
 ): Promise<VerifyPlayroomTokenAccessResult> {
 	const tokenClaims = parsePlayroomTokenClaims(token);
 	const providedTokenFingerprint = await fingerprintToken(token);
@@ -458,7 +603,12 @@ export async function verifyPlayroomTokenAccessWithDataConnect(
 	}
 
 	if (tokenClaims.role === "invited") {
-		const dbInvitedToken = session.jwtTokenInvitedUser;
+		const invitedTokenResult = await fetchPlayroomInvitedUserToken(dataConnect, {
+			id: session.id,
+		});
+		const dbInvitedToken =
+			invitedTokenResult.data.playroomSession?.jwtTokenInvitedUser ??
+			session.jwtTokenInvitedUser;
 		const dbInvitedTokenExists =
 			typeof dbInvitedToken === "string" && dbInvitedToken.length > 0;
 		const dbInvitedTokenFingerprint = dbInvitedTokenExists
@@ -481,10 +631,20 @@ export async function verifyPlayroomTokenAccessWithDataConnect(
 					parsedPlayroomSessionId: tokenClaims.playroomSessionId,
 					providedTokenLength: token.length,
 					providedTokenFingerprint,
+					sessionDatabaseId: session.id,
+					invitedTokenQueryById: {
+						id: session.id,
+						foundSession: Boolean(invitedTokenResult.data.playroomSession),
+						valueWasNull:
+							invitedTokenResult.data.playroomSession?.jwtTokenInvitedUser == null,
+					},
 					dbInvitedTokenExists,
 					dbInvitedTokenLength,
 					dbInvitedTokenFingerprint,
 					invitedTokenEquals: invitedTokenMatches,
+					dbInvitedTokenRaw: includeSensitiveDebug
+						? dbInvitedToken ?? null
+						: undefined,
 				},
 				reason: "invited_token_mismatch",
 			};
@@ -499,22 +659,162 @@ export async function verifyPlayroomTokenAccessWithDataConnect(
 				parsedPlayroomSessionId: tokenClaims.playroomSessionId,
 				providedTokenLength: token.length,
 				providedTokenFingerprint,
+				sessionDatabaseId: session.id,
+				invitedTokenQueryById: {
+					id: session.id,
+					foundSession: Boolean(invitedTokenResult.data.playroomSession),
+					valueWasNull:
+						invitedTokenResult.data.playroomSession?.jwtTokenInvitedUser == null,
+				},
 				dbInvitedTokenExists,
 				dbInvitedTokenLength,
 				dbInvitedTokenFingerprint,
 				invitedTokenEquals: invitedTokenMatches,
+				dbInvitedTokenRaw: includeSensitiveDebug
+					? dbInvitedToken ?? null
+					: undefined,
 				invitedUserJoinedAt: session.invitedUserJoinedAt ?? null,
 			},
 			reason: "ok",
 		};
 	}
 
-	const spectatorMatches =
-		typeof session.jwtTokenSpectator === "string" &&
-		session.jwtTokenSpectator.length > 0 &&
-		session.jwtTokenSpectator === token;
+	const spectatorTokenResult = await fetchPlayroomParticipantToken(dataConnect, {
+		id: session.id,
+	});
+	const dbSpectatorToken =
+		spectatorTokenResult.data.playroomSession?.jwtTokenSpectator ??
+		session.jwtTokenSpectator;
+	const dbSpectatorTokenExists =
+		typeof dbSpectatorToken === "string" && dbSpectatorToken.length > 0;
+	const dbSpectatorTokenFingerprint = dbSpectatorTokenExists
+		? await fingerprintToken(dbSpectatorToken)
+		: undefined;
+	const dbSpectatorTokenLength = dbSpectatorTokenExists
+		? dbSpectatorToken!.length
+		: undefined;
+	const spectatorMatches = dbSpectatorTokenExists && dbSpectatorToken === token;
+	if (!spectatorMatches) {
+		return {
+			ok: false,
+			playroomSessionId: tokenClaims.playroomSessionId,
+			activeCount,
+			role: tokenClaims.role,
+			debug: {
+				parsedRole: tokenClaims.role,
+				parsedPlayroomSessionId: tokenClaims.playroomSessionId,
+				providedTokenLength: token.length,
+				providedTokenFingerprint,
+				sessionDatabaseId: session.id,
+				spectatorTokenQueryById: {
+					id: session.id,
+					foundSession: Boolean(spectatorTokenResult.data.playroomSession),
+					valueWasNull:
+						spectatorTokenResult.data.playroomSession?.jwtTokenSpectator == null,
+				},
+				dbSpectatorTokenExists,
+				dbSpectatorTokenLength,
+				dbSpectatorTokenFingerprint,
+				dbSpectatorTokenRaw: includeSensitiveDebug
+					? dbSpectatorToken ?? null
+					: undefined,
+				spectatorId: spectatorIdFromUrl?.trim() || "",
+			},
+			reason: "spectator_token_mismatch",
+		};
+	}
+
+	const spectatorId = (spectatorIdFromUrl || "").trim();
+	const spectatorIdNormalized = normalizeUserIdForDataConnect(spectatorId);
+	if (!spectatorIdNormalized) {
+		return {
+			ok: false,
+			playroomSessionId: tokenClaims.playroomSessionId,
+			activeCount,
+			role: tokenClaims.role,
+			debug: {
+				parsedRole: tokenClaims.role,
+				parsedPlayroomSessionId: tokenClaims.playroomSessionId,
+				providedTokenLength: token.length,
+				providedTokenFingerprint,
+				sessionDatabaseId: session.id,
+				spectatorTokenQueryById: {
+					id: session.id,
+					foundSession: Boolean(spectatorTokenResult.data.playroomSession),
+					valueWasNull:
+						spectatorTokenResult.data.playroomSession?.jwtTokenSpectator == null,
+				},
+				dbSpectatorTokenExists,
+				dbSpectatorTokenLength,
+				dbSpectatorTokenFingerprint,
+				dbSpectatorTokenRaw: includeSensitiveDebug
+					? dbSpectatorToken ?? null
+					: undefined,
+				spectatorId,
+				spectatorIdNormalized,
+			},
+			reason: "spectator_id_missing",
+		};
+	}
+
+	const spectatorCheck = await isUserInPlayroomSpectators(dataConnect, {
+		id: session.id,
+		userId: spectatorIdNormalized,
+	});
+	const spectatorAllowedByQuery = parseSpectatorAllowed(
+		spectatorCheck.data.spectatorCheck,
+		spectatorId,
+		spectatorIdNormalized,
+	);
+	const spectatorsFieldResult = await fetchPlayroomSpectators(dataConnect, {
+		id: session.id,
+	});
+	const spectatorsFieldRaw = spectatorsFieldResult.data.playroomSession?.spectators;
+	const spectatorsListContains = isSpectatorListedInField(
+		spectatorsFieldRaw,
+		spectatorIdNormalized,
+	);
+	const spectatorAllowed = spectatorAllowedByQuery || spectatorsListContains;
+	if (!spectatorAllowed) {
+		return {
+			ok: false,
+			playroomSessionId: tokenClaims.playroomSessionId,
+			activeCount,
+			role: tokenClaims.role,
+			debug: {
+				parsedRole: tokenClaims.role,
+				parsedPlayroomSessionId: tokenClaims.playroomSessionId,
+				providedTokenLength: token.length,
+				providedTokenFingerprint,
+				sessionDatabaseId: session.id,
+				spectatorTokenQueryById: {
+					id: session.id,
+					foundSession: Boolean(spectatorTokenResult.data.playroomSession),
+					valueWasNull:
+						spectatorTokenResult.data.playroomSession?.jwtTokenSpectator == null,
+				},
+				dbSpectatorTokenExists,
+				dbSpectatorTokenLength,
+				dbSpectatorTokenFingerprint,
+				dbSpectatorTokenRaw: includeSensitiveDebug
+					? dbSpectatorToken ?? null
+					: undefined,
+				spectatorId,
+				spectatorIdNormalized,
+				spectatorAllowed,
+				spectatorCheckAllowedByQuery: spectatorAllowedByQuery,
+				spectatorCheckType: typeof spectatorCheck.data.spectatorCheck,
+				spectatorCheckRaw: spectatorCheck.data.spectatorCheck,
+				spectatorsFieldType: typeof spectatorsFieldRaw,
+				spectatorsFieldRaw,
+				spectatorsListContains,
+			},
+			reason: "spectator_not_allowed",
+		};
+	}
+
 	return {
-		ok: spectatorMatches,
+		ok: true,
 		playroomSessionId: tokenClaims.playroomSessionId,
 		activeCount,
 		role: tokenClaims.role,
@@ -523,8 +823,30 @@ export async function verifyPlayroomTokenAccessWithDataConnect(
 			parsedPlayroomSessionId: tokenClaims.playroomSessionId,
 			providedTokenLength: token.length,
 			providedTokenFingerprint,
+			sessionDatabaseId: session.id,
+			spectatorTokenQueryById: {
+				id: session.id,
+				foundSession: Boolean(spectatorTokenResult.data.playroomSession),
+				valueWasNull:
+					spectatorTokenResult.data.playroomSession?.jwtTokenSpectator == null,
+			},
+			dbSpectatorTokenExists,
+			dbSpectatorTokenLength,
+			dbSpectatorTokenFingerprint,
+			dbSpectatorTokenRaw: includeSensitiveDebug
+				? dbSpectatorToken ?? null
+				: undefined,
+			spectatorId,
+			spectatorIdNormalized,
+			spectatorAllowed,
+			spectatorCheckAllowedByQuery: spectatorAllowedByQuery,
+			spectatorCheckType: typeof spectatorCheck.data.spectatorCheck,
+			spectatorCheckRaw: spectatorCheck.data.spectatorCheck,
+			spectatorsFieldType: typeof spectatorsFieldRaw,
+			spectatorsFieldRaw,
+			spectatorsListContains,
 		},
-		reason: spectatorMatches ? "ok" : "spectator_token_mismatch",
+		reason: "ok",
 	};
 }
 

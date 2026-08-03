@@ -95,6 +95,7 @@ function ChatPanel({ room }: { room: string }) {
 		query: bootstrapOptions.token
 			? {
 				token: bootstrapOptions.token,
+				spectatorId: bootstrapOptions.spectatorId,
 			}
 			: undefined,
 		onMessage: (evt) => {

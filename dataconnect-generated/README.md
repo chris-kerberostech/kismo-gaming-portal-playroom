@@ -37,6 +37,9 @@ This README will guide you through the process of using the generated JavaScript
   - [*FetchPlayroomInvitedUserJoinedAt*](#fetchplayroominviteduserjoinedat)
   - [*FetchPlayroomCreatorUserHeartbeat*](#fetchplayroomcreatoruserheartbeat)
   - [*FetchPlayroomInvitedUserHeartbeat*](#fetchplayroominviteduserheartbeat)
+  - [*FetchPlayroomSpectators*](#fetchplayroomspectators)
+  - [*FetchPlayroomSpectatorsJoined*](#fetchplayroomspectatorsjoined)
+  - [*IsUserInPlayroomSpectators*](#isuserinplayroomspectators)
   - [*ListActivePlayroomSessionsByUserAndGame*](#listactiveplayroomsessionsbyuserandgame)
   - [*GetPlayroomSessionByPlayroomSessionId*](#getplayroomsessionbyplayroomsessionid)
   - [*GetActivePlayroomSessionByPlayroomSessionId*](#getactiveplayroomsessionbyplayroomsessionid)
@@ -78,6 +81,10 @@ This README will guide you through the process of using the generated JavaScript
   - [*DeletePlayroomCreatorUserHeartbeat*](#deleteplayroomcreatoruserheartbeat)
   - [*UpdatePlayroomInvitedUserHeartbeat*](#updateplayroominviteduserheartbeat)
   - [*DeletePlayroomInvitedUserHeartbeat*](#deleteplayroominviteduserheartbeat)
+  - [*UpdatePlayroomSpectators*](#updateplayroomspectators)
+  - [*DeletePlayroomSpectators*](#deleteplayroomspectators)
+  - [*UpdatePlayroomSpectatorsJoined*](#updateplayroomspectatorsjoined)
+  - [*DeletePlayroomSpectatorsJoined*](#deleteplayroomspectatorsjoined)
   - [*ClosePlayroomSession*](#closeplayroomsession)
   - [*DeletePlayroomSession*](#deleteplayroomsession)
 
@@ -3313,6 +3320,340 @@ executeQuery(ref).then((response) => {
 });
 ```
 
+## FetchPlayroomSpectators
+You can execute the `FetchPlayroomSpectators` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+fetchPlayroomSpectators(vars: FetchPlayroomSpectatorsVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomSpectatorsData, FetchPlayroomSpectatorsVariables>;
+
+interface FetchPlayroomSpectatorsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: FetchPlayroomSpectatorsVariables): QueryRef<FetchPlayroomSpectatorsData, FetchPlayroomSpectatorsVariables>;
+}
+export const fetchPlayroomSpectatorsRef: FetchPlayroomSpectatorsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+fetchPlayroomSpectators(dc: DataConnect, vars: FetchPlayroomSpectatorsVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomSpectatorsData, FetchPlayroomSpectatorsVariables>;
+
+interface FetchPlayroomSpectatorsRef {
+  ...
+  (dc: DataConnect, vars: FetchPlayroomSpectatorsVariables): QueryRef<FetchPlayroomSpectatorsData, FetchPlayroomSpectatorsVariables>;
+}
+export const fetchPlayroomSpectatorsRef: FetchPlayroomSpectatorsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the fetchPlayroomSpectatorsRef:
+```typescript
+const name = fetchPlayroomSpectatorsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `FetchPlayroomSpectators` query requires an argument of type `FetchPlayroomSpectatorsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface FetchPlayroomSpectatorsVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `FetchPlayroomSpectators` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `FetchPlayroomSpectatorsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface FetchPlayroomSpectatorsData {
+  playroomSession?: {
+    spectators?: unknown | null;
+  };
+}
+```
+### Using `FetchPlayroomSpectators`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, fetchPlayroomSpectators, FetchPlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+
+// The `FetchPlayroomSpectators` query requires an argument of type `FetchPlayroomSpectatorsVariables`:
+const fetchPlayroomSpectatorsVars: FetchPlayroomSpectatorsVariables = {
+  id: ..., 
+};
+
+// Call the `fetchPlayroomSpectators()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await fetchPlayroomSpectators(fetchPlayroomSpectatorsVars);
+// Variables can be defined inline as well.
+const { data } = await fetchPlayroomSpectators({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await fetchPlayroomSpectators(dataConnect, fetchPlayroomSpectatorsVars);
+
+console.log(data.playroomSession);
+
+// Or, you can use the `Promise` API.
+fetchPlayroomSpectators(fetchPlayroomSpectatorsVars).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession);
+});
+```
+
+### Using `FetchPlayroomSpectators`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, fetchPlayroomSpectatorsRef, FetchPlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+
+// The `FetchPlayroomSpectators` query requires an argument of type `FetchPlayroomSpectatorsVariables`:
+const fetchPlayroomSpectatorsVars: FetchPlayroomSpectatorsVariables = {
+  id: ..., 
+};
+
+// Call the `fetchPlayroomSpectatorsRef()` function to get a reference to the query.
+const ref = fetchPlayroomSpectatorsRef(fetchPlayroomSpectatorsVars);
+// Variables can be defined inline as well.
+const ref = fetchPlayroomSpectatorsRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = fetchPlayroomSpectatorsRef(dataConnect, fetchPlayroomSpectatorsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.playroomSession);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession);
+});
+```
+
+## FetchPlayroomSpectatorsJoined
+You can execute the `FetchPlayroomSpectatorsJoined` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+fetchPlayroomSpectatorsJoined(vars: FetchPlayroomSpectatorsJoinedVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomSpectatorsJoinedData, FetchPlayroomSpectatorsJoinedVariables>;
+
+interface FetchPlayroomSpectatorsJoinedRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: FetchPlayroomSpectatorsJoinedVariables): QueryRef<FetchPlayroomSpectatorsJoinedData, FetchPlayroomSpectatorsJoinedVariables>;
+}
+export const fetchPlayroomSpectatorsJoinedRef: FetchPlayroomSpectatorsJoinedRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+fetchPlayroomSpectatorsJoined(dc: DataConnect, vars: FetchPlayroomSpectatorsJoinedVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomSpectatorsJoinedData, FetchPlayroomSpectatorsJoinedVariables>;
+
+interface FetchPlayroomSpectatorsJoinedRef {
+  ...
+  (dc: DataConnect, vars: FetchPlayroomSpectatorsJoinedVariables): QueryRef<FetchPlayroomSpectatorsJoinedData, FetchPlayroomSpectatorsJoinedVariables>;
+}
+export const fetchPlayroomSpectatorsJoinedRef: FetchPlayroomSpectatorsJoinedRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the fetchPlayroomSpectatorsJoinedRef:
+```typescript
+const name = fetchPlayroomSpectatorsJoinedRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `FetchPlayroomSpectatorsJoined` query requires an argument of type `FetchPlayroomSpectatorsJoinedVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface FetchPlayroomSpectatorsJoinedVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `FetchPlayroomSpectatorsJoined` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `FetchPlayroomSpectatorsJoinedData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface FetchPlayroomSpectatorsJoinedData {
+  playroomSession?: {
+    spectatorsJoined?: unknown | null;
+  };
+}
+```
+### Using `FetchPlayroomSpectatorsJoined`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, fetchPlayroomSpectatorsJoined, FetchPlayroomSpectatorsJoinedVariables } from '@kismoportal-dataconnect/generated';
+
+// The `FetchPlayroomSpectatorsJoined` query requires an argument of type `FetchPlayroomSpectatorsJoinedVariables`:
+const fetchPlayroomSpectatorsJoinedVars: FetchPlayroomSpectatorsJoinedVariables = {
+  id: ..., 
+};
+
+// Call the `fetchPlayroomSpectatorsJoined()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await fetchPlayroomSpectatorsJoined(fetchPlayroomSpectatorsJoinedVars);
+// Variables can be defined inline as well.
+const { data } = await fetchPlayroomSpectatorsJoined({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await fetchPlayroomSpectatorsJoined(dataConnect, fetchPlayroomSpectatorsJoinedVars);
+
+console.log(data.playroomSession);
+
+// Or, you can use the `Promise` API.
+fetchPlayroomSpectatorsJoined(fetchPlayroomSpectatorsJoinedVars).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession);
+});
+```
+
+### Using `FetchPlayroomSpectatorsJoined`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, fetchPlayroomSpectatorsJoinedRef, FetchPlayroomSpectatorsJoinedVariables } from '@kismoportal-dataconnect/generated';
+
+// The `FetchPlayroomSpectatorsJoined` query requires an argument of type `FetchPlayroomSpectatorsJoinedVariables`:
+const fetchPlayroomSpectatorsJoinedVars: FetchPlayroomSpectatorsJoinedVariables = {
+  id: ..., 
+};
+
+// Call the `fetchPlayroomSpectatorsJoinedRef()` function to get a reference to the query.
+const ref = fetchPlayroomSpectatorsJoinedRef(fetchPlayroomSpectatorsJoinedVars);
+// Variables can be defined inline as well.
+const ref = fetchPlayroomSpectatorsJoinedRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = fetchPlayroomSpectatorsJoinedRef(dataConnect, fetchPlayroomSpectatorsJoinedVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.playroomSession);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession);
+});
+```
+
+## IsUserInPlayroomSpectators
+You can execute the `IsUserInPlayroomSpectators` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+isUserInPlayroomSpectators(vars: IsUserInPlayroomSpectatorsVariables, options?: ExecuteQueryOptions): QueryPromise<IsUserInPlayroomSpectatorsData, IsUserInPlayroomSpectatorsVariables>;
+
+interface IsUserInPlayroomSpectatorsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: IsUserInPlayroomSpectatorsVariables): QueryRef<IsUserInPlayroomSpectatorsData, IsUserInPlayroomSpectatorsVariables>;
+}
+export const isUserInPlayroomSpectatorsRef: IsUserInPlayroomSpectatorsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
+```typescript
+isUserInPlayroomSpectators(dc: DataConnect, vars: IsUserInPlayroomSpectatorsVariables, options?: ExecuteQueryOptions): QueryPromise<IsUserInPlayroomSpectatorsData, IsUserInPlayroomSpectatorsVariables>;
+
+interface IsUserInPlayroomSpectatorsRef {
+  ...
+  (dc: DataConnect, vars: IsUserInPlayroomSpectatorsVariables): QueryRef<IsUserInPlayroomSpectatorsData, IsUserInPlayroomSpectatorsVariables>;
+}
+export const isUserInPlayroomSpectatorsRef: IsUserInPlayroomSpectatorsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the isUserInPlayroomSpectatorsRef:
+```typescript
+const name = isUserInPlayroomSpectatorsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `IsUserInPlayroomSpectators` query requires an argument of type `IsUserInPlayroomSpectatorsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface IsUserInPlayroomSpectatorsVariables {
+  id: UUIDString;
+  userId: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `IsUserInPlayroomSpectators` query returns a `QueryPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `IsUserInPlayroomSpectatorsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface IsUserInPlayroomSpectatorsData {
+  spectatorCheck?: unknown | null;
+}
+```
+### Using `IsUserInPlayroomSpectators`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, isUserInPlayroomSpectators, IsUserInPlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+
+// The `IsUserInPlayroomSpectators` query requires an argument of type `IsUserInPlayroomSpectatorsVariables`:
+const isUserInPlayroomSpectatorsVars: IsUserInPlayroomSpectatorsVariables = {
+  id: ..., 
+  userId: ..., 
+};
+
+// Call the `isUserInPlayroomSpectators()` function to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await isUserInPlayroomSpectators(isUserInPlayroomSpectatorsVars);
+// Variables can be defined inline as well.
+const { data } = await isUserInPlayroomSpectators({ id: ..., userId: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await isUserInPlayroomSpectators(dataConnect, isUserInPlayroomSpectatorsVars);
+
+console.log(data.spectatorCheck);
+
+// Or, you can use the `Promise` API.
+isUserInPlayroomSpectators(isUserInPlayroomSpectatorsVars).then((response) => {
+  const data = response.data;
+  console.log(data.spectatorCheck);
+});
+```
+
+### Using `IsUserInPlayroomSpectators`'s `QueryRef` function
+
+```typescript
+import { getDataConnect, executeQuery } from 'firebase/data-connect';
+import { connectorConfig, isUserInPlayroomSpectatorsRef, IsUserInPlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+
+// The `IsUserInPlayroomSpectators` query requires an argument of type `IsUserInPlayroomSpectatorsVariables`:
+const isUserInPlayroomSpectatorsVars: IsUserInPlayroomSpectatorsVariables = {
+  id: ..., 
+  userId: ..., 
+};
+
+// Call the `isUserInPlayroomSpectatorsRef()` function to get a reference to the query.
+const ref = isUserInPlayroomSpectatorsRef(isUserInPlayroomSpectatorsVars);
+// Variables can be defined inline as well.
+const ref = isUserInPlayroomSpectatorsRef({ id: ..., userId: ..., });
+
+// You can also pass in a `DataConnect` instance to the `QueryRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = isUserInPlayroomSpectatorsRef(dataConnect, isUserInPlayroomSpectatorsVars);
+
+// Call `executeQuery()` on the reference to execute the query.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeQuery(ref);
+
+console.log(data.spectatorCheck);
+
+// Or, you can use the `Promise` API.
+executeQuery(ref).then((response) => {
+  const data = response.data;
+  console.log(data.spectatorCheck);
+});
+```
+
 ## ListActivePlayroomSessionsByUserAndGame
 You can execute the `ListActivePlayroomSessionsByUserAndGame` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
 ```typescript
@@ -3366,6 +3707,8 @@ export interface ListActivePlayroomSessionsByUserAndGameData {
     openedAt: TimestampString;
     creatorUserHeartbeat?: TimestampString | null;
     invitedUserHeartbeat?: TimestampString | null;
+    spectators?: unknown | null;
+    spectatorsJoined?: unknown | null;
     closedAt?: TimestampString | null;
   } & PlayroomSession_Key)[];
 }
@@ -3488,6 +3831,8 @@ export interface GetPlayroomSessionByPlayroomSessionIdData {
     openedAt: TimestampString;
     creatorUserHeartbeat?: TimestampString | null;
     invitedUserHeartbeat?: TimestampString | null;
+    spectators?: unknown | null;
+    spectatorsJoined?: unknown | null;
     closedAt?: TimestampString | null;
     jwtTokenCreator: string;
     jwtTokenInvitedUser?: string | null;
@@ -3611,6 +3956,8 @@ export interface GetActivePlayroomSessionByPlayroomSessionIdData {
     openedAt: TimestampString;
     creatorUserHeartbeat?: TimestampString | null;
     invitedUserHeartbeat?: TimestampString | null;
+    spectators?: unknown | null;
+    spectatorsJoined?: unknown | null;
     closedAt?: TimestampString | null;
     jwtTokenCreator: string;
     jwtTokenInvitedUser?: string | null;
@@ -7931,6 +8278,448 @@ const ref = deletePlayroomInvitedUserHeartbeatRef({ id: ..., });
 // You can also pass in a `DataConnect` instance to the `MutationRef` function.
 const dataConnect = getDataConnect(connectorConfig);
 const ref = deletePlayroomInvitedUserHeartbeatRef(dataConnect, deletePlayroomInvitedUserHeartbeatVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.playroomSession_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession_update);
+});
+```
+
+## UpdatePlayroomSpectators
+You can execute the `UpdatePlayroomSpectators` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+updatePlayroomSpectators(vars: UpdatePlayroomSpectatorsVariables): MutationPromise<UpdatePlayroomSpectatorsData, UpdatePlayroomSpectatorsVariables>;
+
+interface UpdatePlayroomSpectatorsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdatePlayroomSpectatorsVariables): MutationRef<UpdatePlayroomSpectatorsData, UpdatePlayroomSpectatorsVariables>;
+}
+export const updatePlayroomSpectatorsRef: UpdatePlayroomSpectatorsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updatePlayroomSpectators(dc: DataConnect, vars: UpdatePlayroomSpectatorsVariables): MutationPromise<UpdatePlayroomSpectatorsData, UpdatePlayroomSpectatorsVariables>;
+
+interface UpdatePlayroomSpectatorsRef {
+  ...
+  (dc: DataConnect, vars: UpdatePlayroomSpectatorsVariables): MutationRef<UpdatePlayroomSpectatorsData, UpdatePlayroomSpectatorsVariables>;
+}
+export const updatePlayroomSpectatorsRef: UpdatePlayroomSpectatorsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updatePlayroomSpectatorsRef:
+```typescript
+const name = updatePlayroomSpectatorsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdatePlayroomSpectators` mutation requires an argument of type `UpdatePlayroomSpectatorsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdatePlayroomSpectatorsVariables {
+  id: UUIDString;
+  spectators: unknown;
+}
+```
+### Return Type
+Recall that executing the `UpdatePlayroomSpectators` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdatePlayroomSpectatorsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdatePlayroomSpectatorsData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+### Using `UpdatePlayroomSpectators`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updatePlayroomSpectators, UpdatePlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+
+// The `UpdatePlayroomSpectators` mutation requires an argument of type `UpdatePlayroomSpectatorsVariables`:
+const updatePlayroomSpectatorsVars: UpdatePlayroomSpectatorsVariables = {
+  id: ..., 
+  spectators: ..., 
+};
+
+// Call the `updatePlayroomSpectators()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updatePlayroomSpectators(updatePlayroomSpectatorsVars);
+// Variables can be defined inline as well.
+const { data } = await updatePlayroomSpectators({ id: ..., spectators: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updatePlayroomSpectators(dataConnect, updatePlayroomSpectatorsVars);
+
+console.log(data.playroomSession_update);
+
+// Or, you can use the `Promise` API.
+updatePlayroomSpectators(updatePlayroomSpectatorsVars).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession_update);
+});
+```
+
+### Using `UpdatePlayroomSpectators`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updatePlayroomSpectatorsRef, UpdatePlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+
+// The `UpdatePlayroomSpectators` mutation requires an argument of type `UpdatePlayroomSpectatorsVariables`:
+const updatePlayroomSpectatorsVars: UpdatePlayroomSpectatorsVariables = {
+  id: ..., 
+  spectators: ..., 
+};
+
+// Call the `updatePlayroomSpectatorsRef()` function to get a reference to the mutation.
+const ref = updatePlayroomSpectatorsRef(updatePlayroomSpectatorsVars);
+// Variables can be defined inline as well.
+const ref = updatePlayroomSpectatorsRef({ id: ..., spectators: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updatePlayroomSpectatorsRef(dataConnect, updatePlayroomSpectatorsVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.playroomSession_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession_update);
+});
+```
+
+## DeletePlayroomSpectators
+You can execute the `DeletePlayroomSpectators` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deletePlayroomSpectators(vars: DeletePlayroomSpectatorsVariables): MutationPromise<DeletePlayroomSpectatorsData, DeletePlayroomSpectatorsVariables>;
+
+interface DeletePlayroomSpectatorsRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeletePlayroomSpectatorsVariables): MutationRef<DeletePlayroomSpectatorsData, DeletePlayroomSpectatorsVariables>;
+}
+export const deletePlayroomSpectatorsRef: DeletePlayroomSpectatorsRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deletePlayroomSpectators(dc: DataConnect, vars: DeletePlayroomSpectatorsVariables): MutationPromise<DeletePlayroomSpectatorsData, DeletePlayroomSpectatorsVariables>;
+
+interface DeletePlayroomSpectatorsRef {
+  ...
+  (dc: DataConnect, vars: DeletePlayroomSpectatorsVariables): MutationRef<DeletePlayroomSpectatorsData, DeletePlayroomSpectatorsVariables>;
+}
+export const deletePlayroomSpectatorsRef: DeletePlayroomSpectatorsRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deletePlayroomSpectatorsRef:
+```typescript
+const name = deletePlayroomSpectatorsRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeletePlayroomSpectators` mutation requires an argument of type `DeletePlayroomSpectatorsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeletePlayroomSpectatorsVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `DeletePlayroomSpectators` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeletePlayroomSpectatorsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeletePlayroomSpectatorsData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+### Using `DeletePlayroomSpectators`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deletePlayroomSpectators, DeletePlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+
+// The `DeletePlayroomSpectators` mutation requires an argument of type `DeletePlayroomSpectatorsVariables`:
+const deletePlayroomSpectatorsVars: DeletePlayroomSpectatorsVariables = {
+  id: ..., 
+};
+
+// Call the `deletePlayroomSpectators()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deletePlayroomSpectators(deletePlayroomSpectatorsVars);
+// Variables can be defined inline as well.
+const { data } = await deletePlayroomSpectators({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deletePlayroomSpectators(dataConnect, deletePlayroomSpectatorsVars);
+
+console.log(data.playroomSession_update);
+
+// Or, you can use the `Promise` API.
+deletePlayroomSpectators(deletePlayroomSpectatorsVars).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession_update);
+});
+```
+
+### Using `DeletePlayroomSpectators`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deletePlayroomSpectatorsRef, DeletePlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+
+// The `DeletePlayroomSpectators` mutation requires an argument of type `DeletePlayroomSpectatorsVariables`:
+const deletePlayroomSpectatorsVars: DeletePlayroomSpectatorsVariables = {
+  id: ..., 
+};
+
+// Call the `deletePlayroomSpectatorsRef()` function to get a reference to the mutation.
+const ref = deletePlayroomSpectatorsRef(deletePlayroomSpectatorsVars);
+// Variables can be defined inline as well.
+const ref = deletePlayroomSpectatorsRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deletePlayroomSpectatorsRef(dataConnect, deletePlayroomSpectatorsVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.playroomSession_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession_update);
+});
+```
+
+## UpdatePlayroomSpectatorsJoined
+You can execute the `UpdatePlayroomSpectatorsJoined` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+updatePlayroomSpectatorsJoined(vars: UpdatePlayroomSpectatorsJoinedVariables): MutationPromise<UpdatePlayroomSpectatorsJoinedData, UpdatePlayroomSpectatorsJoinedVariables>;
+
+interface UpdatePlayroomSpectatorsJoinedRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdatePlayroomSpectatorsJoinedVariables): MutationRef<UpdatePlayroomSpectatorsJoinedData, UpdatePlayroomSpectatorsJoinedVariables>;
+}
+export const updatePlayroomSpectatorsJoinedRef: UpdatePlayroomSpectatorsJoinedRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+updatePlayroomSpectatorsJoined(dc: DataConnect, vars: UpdatePlayroomSpectatorsJoinedVariables): MutationPromise<UpdatePlayroomSpectatorsJoinedData, UpdatePlayroomSpectatorsJoinedVariables>;
+
+interface UpdatePlayroomSpectatorsJoinedRef {
+  ...
+  (dc: DataConnect, vars: UpdatePlayroomSpectatorsJoinedVariables): MutationRef<UpdatePlayroomSpectatorsJoinedData, UpdatePlayroomSpectatorsJoinedVariables>;
+}
+export const updatePlayroomSpectatorsJoinedRef: UpdatePlayroomSpectatorsJoinedRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updatePlayroomSpectatorsJoinedRef:
+```typescript
+const name = updatePlayroomSpectatorsJoinedRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `UpdatePlayroomSpectatorsJoined` mutation requires an argument of type `UpdatePlayroomSpectatorsJoinedVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface UpdatePlayroomSpectatorsJoinedVariables {
+  id: UUIDString;
+  spectatorsJoined: unknown;
+}
+```
+### Return Type
+Recall that executing the `UpdatePlayroomSpectatorsJoined` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `UpdatePlayroomSpectatorsJoinedData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface UpdatePlayroomSpectatorsJoinedData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+### Using `UpdatePlayroomSpectatorsJoined`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, updatePlayroomSpectatorsJoined, UpdatePlayroomSpectatorsJoinedVariables } from '@kismoportal-dataconnect/generated';
+
+// The `UpdatePlayroomSpectatorsJoined` mutation requires an argument of type `UpdatePlayroomSpectatorsJoinedVariables`:
+const updatePlayroomSpectatorsJoinedVars: UpdatePlayroomSpectatorsJoinedVariables = {
+  id: ..., 
+  spectatorsJoined: ..., 
+};
+
+// Call the `updatePlayroomSpectatorsJoined()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await updatePlayroomSpectatorsJoined(updatePlayroomSpectatorsJoinedVars);
+// Variables can be defined inline as well.
+const { data } = await updatePlayroomSpectatorsJoined({ id: ..., spectatorsJoined: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await updatePlayroomSpectatorsJoined(dataConnect, updatePlayroomSpectatorsJoinedVars);
+
+console.log(data.playroomSession_update);
+
+// Or, you can use the `Promise` API.
+updatePlayroomSpectatorsJoined(updatePlayroomSpectatorsJoinedVars).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession_update);
+});
+```
+
+### Using `UpdatePlayroomSpectatorsJoined`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, updatePlayroomSpectatorsJoinedRef, UpdatePlayroomSpectatorsJoinedVariables } from '@kismoportal-dataconnect/generated';
+
+// The `UpdatePlayroomSpectatorsJoined` mutation requires an argument of type `UpdatePlayroomSpectatorsJoinedVariables`:
+const updatePlayroomSpectatorsJoinedVars: UpdatePlayroomSpectatorsJoinedVariables = {
+  id: ..., 
+  spectatorsJoined: ..., 
+};
+
+// Call the `updatePlayroomSpectatorsJoinedRef()` function to get a reference to the mutation.
+const ref = updatePlayroomSpectatorsJoinedRef(updatePlayroomSpectatorsJoinedVars);
+// Variables can be defined inline as well.
+const ref = updatePlayroomSpectatorsJoinedRef({ id: ..., spectatorsJoined: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = updatePlayroomSpectatorsJoinedRef(dataConnect, updatePlayroomSpectatorsJoinedVars);
+
+// Call `executeMutation()` on the reference to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await executeMutation(ref);
+
+console.log(data.playroomSession_update);
+
+// Or, you can use the `Promise` API.
+executeMutation(ref).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession_update);
+});
+```
+
+## DeletePlayroomSpectatorsJoined
+You can execute the `DeletePlayroomSpectatorsJoined` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
+```typescript
+deletePlayroomSpectatorsJoined(vars: DeletePlayroomSpectatorsJoinedVariables): MutationPromise<DeletePlayroomSpectatorsJoinedData, DeletePlayroomSpectatorsJoinedVariables>;
+
+interface DeletePlayroomSpectatorsJoinedRef {
+  ...
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeletePlayroomSpectatorsJoinedVariables): MutationRef<DeletePlayroomSpectatorsJoinedData, DeletePlayroomSpectatorsJoinedVariables>;
+}
+export const deletePlayroomSpectatorsJoinedRef: DeletePlayroomSpectatorsJoinedRef;
+```
+You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
+```typescript
+deletePlayroomSpectatorsJoined(dc: DataConnect, vars: DeletePlayroomSpectatorsJoinedVariables): MutationPromise<DeletePlayroomSpectatorsJoinedData, DeletePlayroomSpectatorsJoinedVariables>;
+
+interface DeletePlayroomSpectatorsJoinedRef {
+  ...
+  (dc: DataConnect, vars: DeletePlayroomSpectatorsJoinedVariables): MutationRef<DeletePlayroomSpectatorsJoinedData, DeletePlayroomSpectatorsJoinedVariables>;
+}
+export const deletePlayroomSpectatorsJoinedRef: DeletePlayroomSpectatorsJoinedRef;
+```
+
+If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the deletePlayroomSpectatorsJoinedRef:
+```typescript
+const name = deletePlayroomSpectatorsJoinedRef.operationName;
+console.log(name);
+```
+
+### Variables
+The `DeletePlayroomSpectatorsJoined` mutation requires an argument of type `DeletePlayroomSpectatorsJoinedVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+
+```typescript
+export interface DeletePlayroomSpectatorsJoinedVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that executing the `DeletePlayroomSpectatorsJoined` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
+
+The `data` property is an object of type `DeletePlayroomSpectatorsJoinedData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
+```typescript
+export interface DeletePlayroomSpectatorsJoinedData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+### Using `DeletePlayroomSpectatorsJoined`'s action shortcut function
+
+```typescript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, deletePlayroomSpectatorsJoined, DeletePlayroomSpectatorsJoinedVariables } from '@kismoportal-dataconnect/generated';
+
+// The `DeletePlayroomSpectatorsJoined` mutation requires an argument of type `DeletePlayroomSpectatorsJoinedVariables`:
+const deletePlayroomSpectatorsJoinedVars: DeletePlayroomSpectatorsJoinedVariables = {
+  id: ..., 
+};
+
+// Call the `deletePlayroomSpectatorsJoined()` function to execute the mutation.
+// You can use the `await` keyword to wait for the promise to resolve.
+const { data } = await deletePlayroomSpectatorsJoined(deletePlayroomSpectatorsJoinedVars);
+// Variables can be defined inline as well.
+const { data } = await deletePlayroomSpectatorsJoined({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the action shortcut function.
+const dataConnect = getDataConnect(connectorConfig);
+const { data } = await deletePlayroomSpectatorsJoined(dataConnect, deletePlayroomSpectatorsJoinedVars);
+
+console.log(data.playroomSession_update);
+
+// Or, you can use the `Promise` API.
+deletePlayroomSpectatorsJoined(deletePlayroomSpectatorsJoinedVars).then((response) => {
+  const data = response.data;
+  console.log(data.playroomSession_update);
+});
+```
+
+### Using `DeletePlayroomSpectatorsJoined`'s `MutationRef` function
+
+```typescript
+import { getDataConnect, executeMutation } from 'firebase/data-connect';
+import { connectorConfig, deletePlayroomSpectatorsJoinedRef, DeletePlayroomSpectatorsJoinedVariables } from '@kismoportal-dataconnect/generated';
+
+// The `DeletePlayroomSpectatorsJoined` mutation requires an argument of type `DeletePlayroomSpectatorsJoinedVariables`:
+const deletePlayroomSpectatorsJoinedVars: DeletePlayroomSpectatorsJoinedVariables = {
+  id: ..., 
+};
+
+// Call the `deletePlayroomSpectatorsJoinedRef()` function to get a reference to the mutation.
+const ref = deletePlayroomSpectatorsJoinedRef(deletePlayroomSpectatorsJoinedVars);
+// Variables can be defined inline as well.
+const ref = deletePlayroomSpectatorsJoinedRef({ id: ..., });
+
+// You can also pass in a `DataConnect` instance to the `MutationRef` function.
+const dataConnect = getDataConnect(connectorConfig);
+const ref = deletePlayroomSpectatorsJoinedRef(dataConnect, deletePlayroomSpectatorsJoinedVars);
 
 // Call `executeMutation()` on the reference to execute the mutation.
 // You can use the `await` keyword to wait for the promise to resolve.

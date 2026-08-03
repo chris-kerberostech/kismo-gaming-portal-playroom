@@ -44,6 +44,9 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*FetchPlayroomInvitedUserJoinedAt*](#fetchplayroominviteduserjoinedat)
   - [*FetchPlayroomCreatorUserHeartbeat*](#fetchplayroomcreatoruserheartbeat)
   - [*FetchPlayroomInvitedUserHeartbeat*](#fetchplayroominviteduserheartbeat)
+  - [*FetchPlayroomSpectators*](#fetchplayroomspectators)
+  - [*FetchPlayroomSpectatorsJoined*](#fetchplayroomspectatorsjoined)
+  - [*IsUserInPlayroomSpectators*](#isuserinplayroomspectators)
   - [*ListActivePlayroomSessionsByUserAndGame*](#listactiveplayroomsessionsbyuserandgame)
   - [*GetPlayroomSessionByPlayroomSessionId*](#getplayroomsessionbyplayroomsessionid)
   - [*GetActivePlayroomSessionByPlayroomSessionId*](#getactiveplayroomsessionbyplayroomsessionid)
@@ -85,6 +88,10 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*DeletePlayroomCreatorUserHeartbeat*](#deleteplayroomcreatoruserheartbeat)
   - [*UpdatePlayroomInvitedUserHeartbeat*](#updateplayroominviteduserheartbeat)
   - [*DeletePlayroomInvitedUserHeartbeat*](#deleteplayroominviteduserheartbeat)
+  - [*UpdatePlayroomSpectators*](#updateplayroomspectators)
+  - [*DeletePlayroomSpectators*](#deleteplayroomspectators)
+  - [*UpdatePlayroomSpectatorsJoined*](#updateplayroomspectatorsjoined)
+  - [*DeletePlayroomSpectatorsJoined*](#deleteplayroomspectatorsjoined)
   - [*ClosePlayroomSession*](#closeplayroomsession)
   - [*DeletePlayroomSession*](#deleteplayroomsession)
 
@@ -2628,6 +2635,258 @@ export default function FetchPlayroomInvitedUserHeartbeatComponent() {
 }
 ```
 
+## FetchPlayroomSpectators
+You can execute the `FetchPlayroomSpectators` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useFetchPlayroomSpectators(dc: DataConnect, vars: FetchPlayroomSpectatorsVariables, options?: useDataConnectQueryOptions<FetchPlayroomSpectatorsData>): UseDataConnectQueryResult<FetchPlayroomSpectatorsData, FetchPlayroomSpectatorsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useFetchPlayroomSpectators(vars: FetchPlayroomSpectatorsVariables, options?: useDataConnectQueryOptions<FetchPlayroomSpectatorsData>): UseDataConnectQueryResult<FetchPlayroomSpectatorsData, FetchPlayroomSpectatorsVariables>;
+```
+
+### Variables
+The `FetchPlayroomSpectators` Query requires an argument of type `FetchPlayroomSpectatorsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface FetchPlayroomSpectatorsVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `FetchPlayroomSpectators` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `FetchPlayroomSpectators` Query is of type `FetchPlayroomSpectatorsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface FetchPlayroomSpectatorsData {
+  playroomSession?: {
+    spectators?: unknown | null;
+  };
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `FetchPlayroomSpectators`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, FetchPlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+import { useFetchPlayroomSpectators } from '@kismoportal-dataconnect/generated/react'
+
+export default function FetchPlayroomSpectatorsComponent() {
+  // The `useFetchPlayroomSpectators` Query hook requires an argument of type `FetchPlayroomSpectatorsVariables`:
+  const fetchPlayroomSpectatorsVars: FetchPlayroomSpectatorsVariables = {
+    id: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useFetchPlayroomSpectators(fetchPlayroomSpectatorsVars);
+  // Variables can be defined inline as well.
+  const query = useFetchPlayroomSpectators({ id: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useFetchPlayroomSpectators(dataConnect, fetchPlayroomSpectatorsVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useFetchPlayroomSpectators(fetchPlayroomSpectatorsVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useFetchPlayroomSpectators(dataConnect, fetchPlayroomSpectatorsVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.playroomSession);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## FetchPlayroomSpectatorsJoined
+You can execute the `FetchPlayroomSpectatorsJoined` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useFetchPlayroomSpectatorsJoined(dc: DataConnect, vars: FetchPlayroomSpectatorsJoinedVariables, options?: useDataConnectQueryOptions<FetchPlayroomSpectatorsJoinedData>): UseDataConnectQueryResult<FetchPlayroomSpectatorsJoinedData, FetchPlayroomSpectatorsJoinedVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useFetchPlayroomSpectatorsJoined(vars: FetchPlayroomSpectatorsJoinedVariables, options?: useDataConnectQueryOptions<FetchPlayroomSpectatorsJoinedData>): UseDataConnectQueryResult<FetchPlayroomSpectatorsJoinedData, FetchPlayroomSpectatorsJoinedVariables>;
+```
+
+### Variables
+The `FetchPlayroomSpectatorsJoined` Query requires an argument of type `FetchPlayroomSpectatorsJoinedVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface FetchPlayroomSpectatorsJoinedVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `FetchPlayroomSpectatorsJoined` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `FetchPlayroomSpectatorsJoined` Query is of type `FetchPlayroomSpectatorsJoinedData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface FetchPlayroomSpectatorsJoinedData {
+  playroomSession?: {
+    spectatorsJoined?: unknown | null;
+  };
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `FetchPlayroomSpectatorsJoined`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, FetchPlayroomSpectatorsJoinedVariables } from '@kismoportal-dataconnect/generated';
+import { useFetchPlayroomSpectatorsJoined } from '@kismoportal-dataconnect/generated/react'
+
+export default function FetchPlayroomSpectatorsJoinedComponent() {
+  // The `useFetchPlayroomSpectatorsJoined` Query hook requires an argument of type `FetchPlayroomSpectatorsJoinedVariables`:
+  const fetchPlayroomSpectatorsJoinedVars: FetchPlayroomSpectatorsJoinedVariables = {
+    id: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useFetchPlayroomSpectatorsJoined(fetchPlayroomSpectatorsJoinedVars);
+  // Variables can be defined inline as well.
+  const query = useFetchPlayroomSpectatorsJoined({ id: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useFetchPlayroomSpectatorsJoined(dataConnect, fetchPlayroomSpectatorsJoinedVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useFetchPlayroomSpectatorsJoined(fetchPlayroomSpectatorsJoinedVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useFetchPlayroomSpectatorsJoined(dataConnect, fetchPlayroomSpectatorsJoinedVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.playroomSession);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## IsUserInPlayroomSpectators
+You can execute the `IsUserInPlayroomSpectators` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useIsUserInPlayroomSpectators(dc: DataConnect, vars: IsUserInPlayroomSpectatorsVariables, options?: useDataConnectQueryOptions<IsUserInPlayroomSpectatorsData>): UseDataConnectQueryResult<IsUserInPlayroomSpectatorsData, IsUserInPlayroomSpectatorsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useIsUserInPlayroomSpectators(vars: IsUserInPlayroomSpectatorsVariables, options?: useDataConnectQueryOptions<IsUserInPlayroomSpectatorsData>): UseDataConnectQueryResult<IsUserInPlayroomSpectatorsData, IsUserInPlayroomSpectatorsVariables>;
+```
+
+### Variables
+The `IsUserInPlayroomSpectators` Query requires an argument of type `IsUserInPlayroomSpectatorsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface IsUserInPlayroomSpectatorsVariables {
+  id: UUIDString;
+  userId: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `IsUserInPlayroomSpectators` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `IsUserInPlayroomSpectators` Query is of type `IsUserInPlayroomSpectatorsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface IsUserInPlayroomSpectatorsData {
+  spectatorCheck?: unknown | null;
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `IsUserInPlayroomSpectators`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, IsUserInPlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+import { useIsUserInPlayroomSpectators } from '@kismoportal-dataconnect/generated/react'
+
+export default function IsUserInPlayroomSpectatorsComponent() {
+  // The `useIsUserInPlayroomSpectators` Query hook requires an argument of type `IsUserInPlayroomSpectatorsVariables`:
+  const isUserInPlayroomSpectatorsVars: IsUserInPlayroomSpectatorsVariables = {
+    id: ..., 
+    userId: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useIsUserInPlayroomSpectators(isUserInPlayroomSpectatorsVars);
+  // Variables can be defined inline as well.
+  const query = useIsUserInPlayroomSpectators({ id: ..., userId: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useIsUserInPlayroomSpectators(dataConnect, isUserInPlayroomSpectatorsVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useIsUserInPlayroomSpectators(isUserInPlayroomSpectatorsVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useIsUserInPlayroomSpectators(dataConnect, isUserInPlayroomSpectatorsVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.spectatorCheck);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
 ## ListActivePlayroomSessionsByUserAndGame
 You can execute the `ListActivePlayroomSessionsByUserAndGame` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
@@ -2665,6 +2924,8 @@ export interface ListActivePlayroomSessionsByUserAndGameData {
     openedAt: TimestampString;
     creatorUserHeartbeat?: TimestampString | null;
     invitedUserHeartbeat?: TimestampString | null;
+    spectators?: unknown | null;
+    spectatorsJoined?: unknown | null;
     closedAt?: TimestampString | null;
   } & PlayroomSession_Key)[];
 }
@@ -2759,6 +3020,8 @@ export interface GetPlayroomSessionByPlayroomSessionIdData {
     openedAt: TimestampString;
     creatorUserHeartbeat?: TimestampString | null;
     invitedUserHeartbeat?: TimestampString | null;
+    spectators?: unknown | null;
+    spectatorsJoined?: unknown | null;
     closedAt?: TimestampString | null;
     jwtTokenCreator: string;
     jwtTokenInvitedUser?: string | null;
@@ -2855,6 +3118,8 @@ export interface GetActivePlayroomSessionByPlayroomSessionIdData {
     openedAt: TimestampString;
     creatorUserHeartbeat?: TimestampString | null;
     invitedUserHeartbeat?: TimestampString | null;
+    spectators?: unknown | null;
+    spectatorsJoined?: unknown | null;
     closedAt?: TimestampString | null;
     jwtTokenCreator: string;
     jwtTokenInvitedUser?: string | null;
@@ -6543,6 +6808,386 @@ export default function DeletePlayroomInvitedUserHeartbeatComponent() {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
   mutation.mutate(deletePlayroomInvitedUserHeartbeatVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.playroomSession_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpdatePlayroomSpectators
+You can execute the `UpdatePlayroomSpectators` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpdatePlayroomSpectators(options?: useDataConnectMutationOptions<UpdatePlayroomSpectatorsData, FirebaseError, UpdatePlayroomSpectatorsVariables>): UseDataConnectMutationResult<UpdatePlayroomSpectatorsData, UpdatePlayroomSpectatorsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpdatePlayroomSpectators(dc: DataConnect, options?: useDataConnectMutationOptions<UpdatePlayroomSpectatorsData, FirebaseError, UpdatePlayroomSpectatorsVariables>): UseDataConnectMutationResult<UpdatePlayroomSpectatorsData, UpdatePlayroomSpectatorsVariables>;
+```
+
+### Variables
+The `UpdatePlayroomSpectators` Mutation requires an argument of type `UpdatePlayroomSpectatorsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpdatePlayroomSpectatorsVariables {
+  id: UUIDString;
+  spectators: unknown;
+}
+```
+### Return Type
+Recall that calling the `UpdatePlayroomSpectators` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdatePlayroomSpectators` Mutation is of type `UpdatePlayroomSpectatorsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpdatePlayroomSpectatorsData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpdatePlayroomSpectators`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpdatePlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+import { useUpdatePlayroomSpectators } from '@kismoportal-dataconnect/generated/react'
+
+export default function UpdatePlayroomSpectatorsComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpdatePlayroomSpectators();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpdatePlayroomSpectators(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdatePlayroomSpectators(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdatePlayroomSpectators(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpdatePlayroomSpectators` Mutation requires an argument of type `UpdatePlayroomSpectatorsVariables`:
+  const updatePlayroomSpectatorsVars: UpdatePlayroomSpectatorsVariables = {
+    id: ..., 
+    spectators: ..., 
+  };
+  mutation.mutate(updatePlayroomSpectatorsVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., spectators: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(updatePlayroomSpectatorsVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.playroomSession_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeletePlayroomSpectators
+You can execute the `DeletePlayroomSpectators` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeletePlayroomSpectators(options?: useDataConnectMutationOptions<DeletePlayroomSpectatorsData, FirebaseError, DeletePlayroomSpectatorsVariables>): UseDataConnectMutationResult<DeletePlayroomSpectatorsData, DeletePlayroomSpectatorsVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeletePlayroomSpectators(dc: DataConnect, options?: useDataConnectMutationOptions<DeletePlayroomSpectatorsData, FirebaseError, DeletePlayroomSpectatorsVariables>): UseDataConnectMutationResult<DeletePlayroomSpectatorsData, DeletePlayroomSpectatorsVariables>;
+```
+
+### Variables
+The `DeletePlayroomSpectators` Mutation requires an argument of type `DeletePlayroomSpectatorsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeletePlayroomSpectatorsVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `DeletePlayroomSpectators` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeletePlayroomSpectators` Mutation is of type `DeletePlayroomSpectatorsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeletePlayroomSpectatorsData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeletePlayroomSpectators`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeletePlayroomSpectatorsVariables } from '@kismoportal-dataconnect/generated';
+import { useDeletePlayroomSpectators } from '@kismoportal-dataconnect/generated/react'
+
+export default function DeletePlayroomSpectatorsComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeletePlayroomSpectators();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeletePlayroomSpectators(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeletePlayroomSpectators(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeletePlayroomSpectators(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeletePlayroomSpectators` Mutation requires an argument of type `DeletePlayroomSpectatorsVariables`:
+  const deletePlayroomSpectatorsVars: DeletePlayroomSpectatorsVariables = {
+    id: ..., 
+  };
+  mutation.mutate(deletePlayroomSpectatorsVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deletePlayroomSpectatorsVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.playroomSession_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpdatePlayroomSpectatorsJoined
+You can execute the `UpdatePlayroomSpectatorsJoined` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpdatePlayroomSpectatorsJoined(options?: useDataConnectMutationOptions<UpdatePlayroomSpectatorsJoinedData, FirebaseError, UpdatePlayroomSpectatorsJoinedVariables>): UseDataConnectMutationResult<UpdatePlayroomSpectatorsJoinedData, UpdatePlayroomSpectatorsJoinedVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpdatePlayroomSpectatorsJoined(dc: DataConnect, options?: useDataConnectMutationOptions<UpdatePlayroomSpectatorsJoinedData, FirebaseError, UpdatePlayroomSpectatorsJoinedVariables>): UseDataConnectMutationResult<UpdatePlayroomSpectatorsJoinedData, UpdatePlayroomSpectatorsJoinedVariables>;
+```
+
+### Variables
+The `UpdatePlayroomSpectatorsJoined` Mutation requires an argument of type `UpdatePlayroomSpectatorsJoinedVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpdatePlayroomSpectatorsJoinedVariables {
+  id: UUIDString;
+  spectatorsJoined: unknown;
+}
+```
+### Return Type
+Recall that calling the `UpdatePlayroomSpectatorsJoined` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdatePlayroomSpectatorsJoined` Mutation is of type `UpdatePlayroomSpectatorsJoinedData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpdatePlayroomSpectatorsJoinedData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpdatePlayroomSpectatorsJoined`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpdatePlayroomSpectatorsJoinedVariables } from '@kismoportal-dataconnect/generated';
+import { useUpdatePlayroomSpectatorsJoined } from '@kismoportal-dataconnect/generated/react'
+
+export default function UpdatePlayroomSpectatorsJoinedComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpdatePlayroomSpectatorsJoined();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpdatePlayroomSpectatorsJoined(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdatePlayroomSpectatorsJoined(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdatePlayroomSpectatorsJoined(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpdatePlayroomSpectatorsJoined` Mutation requires an argument of type `UpdatePlayroomSpectatorsJoinedVariables`:
+  const updatePlayroomSpectatorsJoinedVars: UpdatePlayroomSpectatorsJoinedVariables = {
+    id: ..., 
+    spectatorsJoined: ..., 
+  };
+  mutation.mutate(updatePlayroomSpectatorsJoinedVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., spectatorsJoined: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(updatePlayroomSpectatorsJoinedVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.playroomSession_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeletePlayroomSpectatorsJoined
+You can execute the `DeletePlayroomSpectatorsJoined` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeletePlayroomSpectatorsJoined(options?: useDataConnectMutationOptions<DeletePlayroomSpectatorsJoinedData, FirebaseError, DeletePlayroomSpectatorsJoinedVariables>): UseDataConnectMutationResult<DeletePlayroomSpectatorsJoinedData, DeletePlayroomSpectatorsJoinedVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeletePlayroomSpectatorsJoined(dc: DataConnect, options?: useDataConnectMutationOptions<DeletePlayroomSpectatorsJoinedData, FirebaseError, DeletePlayroomSpectatorsJoinedVariables>): UseDataConnectMutationResult<DeletePlayroomSpectatorsJoinedData, DeletePlayroomSpectatorsJoinedVariables>;
+```
+
+### Variables
+The `DeletePlayroomSpectatorsJoined` Mutation requires an argument of type `DeletePlayroomSpectatorsJoinedVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeletePlayroomSpectatorsJoinedVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `DeletePlayroomSpectatorsJoined` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeletePlayroomSpectatorsJoined` Mutation is of type `DeletePlayroomSpectatorsJoinedData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeletePlayroomSpectatorsJoinedData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeletePlayroomSpectatorsJoined`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeletePlayroomSpectatorsJoinedVariables } from '@kismoportal-dataconnect/generated';
+import { useDeletePlayroomSpectatorsJoined } from '@kismoportal-dataconnect/generated/react'
+
+export default function DeletePlayroomSpectatorsJoinedComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeletePlayroomSpectatorsJoined();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeletePlayroomSpectatorsJoined(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeletePlayroomSpectatorsJoined(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeletePlayroomSpectatorsJoined(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeletePlayroomSpectatorsJoined` Mutation requires an argument of type `DeletePlayroomSpectatorsJoinedVariables`:
+  const deletePlayroomSpectatorsJoinedVars: DeletePlayroomSpectatorsJoinedVariables = {
+    id: ..., 
+  };
+  mutation.mutate(deletePlayroomSpectatorsJoinedVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deletePlayroomSpectatorsJoinedVars, options);
 
   // Then, you can render your component dynamically based on the status of the Mutation.
   if (mutation.isPending) {

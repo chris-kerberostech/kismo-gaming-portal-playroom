@@ -143,8 +143,15 @@ async function verifyTokenWithDataConnect(
 	token: string,
 	env: AuthEnv,
 	traceId: string,
+	spectatorId?: string,
+	devMode?: boolean,
 ): Promise<boolean> {
-	const verification = await verifyPlayroomTokenAccessWithDataConnect(token, env);
+	const verification = await verifyPlayroomTokenAccessWithDataConnect(
+		token,
+		env,
+		spectatorId,
+		Boolean(devMode),
+	);
 	const playroomSessionId = verification.playroomSessionId;
 	if (!playroomSessionId) {
 		authLog("warn", "claims_missing_session_id", {
@@ -168,7 +175,28 @@ async function verifyTokenWithDataConnect(
 		activeCount: verification.activeCount,
 		role: verification.role,
 		reason: verification.reason,
+			spectatorIdProvided: Boolean(spectatorId && spectatorId.trim()),
 	});
+
+	if (devMode && verification.role === "spectator") {
+		const normalizedSpectatorId = spectatorId?.trim() || "";
+		authLog("info", "spectator_id_check_result", {
+			traceId,
+			playroomSessionId: verification.playroomSessionId,
+			spectatorIdProvided: normalizedSpectatorId.length > 0,
+			spectatorId,
+			allowed: verification.reason === "ok",
+			reason: verification.reason,
+			debug: verification.debug,
+		});
+		authLog("info", "spectator_check_shape_dev", {
+			traceId,
+			playroomSessionId: verification.playroomSessionId,
+			reason: verification.reason,
+			spectatorCheckType: verification.debug?.spectatorCheckType ?? null,
+			spectatorCheckRaw: verification.debug?.spectatorCheckRaw ?? null,
+		});
+	}
 
 	return verification.ok;
 }
@@ -187,9 +215,19 @@ async function verifyToken(
 	token: string,
 	env: AuthEnv,
 	traceId: string,
+	spectatorId?: string,
+	devMode?: boolean,
 ): Promise<boolean> {
 	try {
-		if (await verifyTokenWithDataConnect(token, env, traceId)) {
+		if (
+			await verifyTokenWithDataConnect(
+				token,
+				env,
+				traceId,
+				spectatorId,
+				devMode,
+			)
+		) {
 			authLog("info", "verification_success", {
 				traceId,
 				source: "dataconnect",
@@ -388,8 +426,30 @@ export default {
 				const verification = await verifyPlayroomTokenAccessWithDataConnect(
 					token,
 					env as AuthEnv,
+					spectatorId,
+					devMode,
 				);
-				if (verification.role === "spectator" && spectatorId.length === 0) {
+				if (devMode) {
+					authLog("warn", "verify_tokens_raw_dev", {
+						note: "DEV ONLY: raw token strings for manual comparison",
+						reason: verification.reason,
+						role: verification.role,
+						playroomSessionId: verification.playroomSessionId,
+						requestTokenRaw: token,
+						dbInvitedTokenRaw: verification.debug?.dbInvitedTokenRaw ?? null,
+					});
+					if (verification.role === "invited") {
+						authLog("info", "invited_id_mapping_dev", {
+							note: "DEV ONLY: token claim playroomSessionId is not DB record id",
+							tokenPlayroomSessionId:
+								verification.debug?.parsedPlayroomSessionId ??
+								verification.playroomSessionId ??
+								null,
+							sessionDatabaseId: verification.debug?.sessionDatabaseId ?? null,
+						});
+					}
+				}
+				if (verification.reason === "spectator_id_missing") {
 					if (devMode) {
 						authLog("info", "verify_endpoint_debug", {
 							reason: "missing_spectator_id",
@@ -421,6 +481,13 @@ export default {
 							debug: verification.debug,
 						},
 					});
+					if (verification.reason === "invited_token_mismatch") {
+						authLog("warn", "invited_db_token_raw_dev", {
+							note: "DEV ONLY: raw token currently stored in DataConnect",
+							playroomSessionId: verification.playroomSessionId,
+							token: verification.debug?.dbInvitedTokenRaw ?? null,
+						});
+					}
 				}
 
 				return jsonResponse(
@@ -454,12 +521,14 @@ export default {
 		const wsUpgrade = isWebSocketUpgrade(request);
 		const traceId = crypto.randomUUID().slice(0, 8);
 		const isSecureRequest = url.protocol === "https:";
+		const devMode = isDevRequest(env as AuthEnv, url);
 		const cookies = parseCookies(request.headers.get("Cookie"));
 		const alreadyAuthorized = cookies[AUTH_COOKIE_NAME] === "1";
 		const token =
 			url.searchParams.get("token") ||
 			request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ||
 			"";
+		const spectatorId = (url.searchParams.get("spectatorId") || "").trim();
 		authLog("info", "request_received", {
 			traceId,
 			method: request.method,
@@ -493,7 +562,13 @@ export default {
 				});
 				return unauthorizedResponse();
 			}
-			const isValidToken = await verifyToken(token, env as AuthEnv, traceId);
+			const isValidToken = await verifyToken(
+				token,
+				env as AuthEnv,
+				traceId,
+				spectatorId,
+				devMode,
+			);
 			if (!isValidToken) {
 				authLog("warn", "request_denied", {
 					traceId,
