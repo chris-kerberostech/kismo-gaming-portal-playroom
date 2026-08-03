@@ -5,8 +5,16 @@ import {
 	routePartykitRequest,
 } from "partyserver";
 
-import type { ChatMessage, Message } from "../shared";
 import {
+	PlayroomTokenRole,
+	type ChatMessage,
+	type Message,
+	type PlayroomUserProfile,
+	type PlayroomUsersSessionInfo,
+} from "../shared";
+import {
+	fetchUserProfileFromDataConnect,
+	parsePlayroomTokenIdentity,
 	type FirebaseEnv,
 	verifyPlayroomTokenAccessWithDataConnect,
 } from "./firebase";
@@ -178,7 +186,7 @@ async function verifyTokenWithDataConnect(
 			spectatorIdProvided: Boolean(spectatorId && spectatorId.trim()),
 	});
 
-	if (devMode && verification.role === "spectator") {
+	if (devMode && verification.role === PlayroomTokenRole.SPECTATOR) {
 		const normalizedSpectatorId = spectatorId?.trim() || "";
 		authLog("info", "spectator_id_check_result", {
 			traceId,
@@ -331,13 +339,325 @@ function isWebSocketUpgrade(request: Request): boolean {
 	return request.headers.get("Upgrade")?.toLowerCase() === "websocket";
 }
 
+function getPartyRoomFromPath(pathname: string): string | null {
+	const parts = pathname.split("/").filter(Boolean);
+	if (parts.length < 3) return null;
+	if (parts[0] !== "parties" || parts[1] !== "chat") return null;
+	return decodeURIComponent(parts[2]!);
+}
+
+async function upsertAuthenticatedUserProfile(args: {
+	env: Env;
+	token: string;
+	requestUrl: URL;
+	traceId: string;
+}) {
+	const { env, token, requestUrl, traceId } = args;
+	const room = getPartyRoomFromPath(requestUrl.pathname);
+	if (!room) return;
+
+	const identity = parsePlayroomTokenIdentity(token);
+	if (!identity) {
+		authLog("warn", "user_profile_identity_missing", {
+			traceId,
+			path: requestUrl.pathname,
+		});
+		return;
+	}
+
+	const profile = await fetchUserProfileFromDataConnect(identity.userId, env as AuthEnv);
+	if (!profile) {
+		authLog("warn", "user_profile_not_found", {
+			traceId,
+			room,
+			userId: identity.userId,
+		});
+		return;
+	}
+
+	const stubId = env.Chat.idFromName(room);
+	const stub = env.Chat.get(stubId);
+	const response = await stub.fetch("https://internal/users?op=upsert", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			"x-kismo-internal-upsert": "1",
+		},
+		body: JSON.stringify(profile),
+	});
+
+	if (!response.ok) {
+		authLog("warn", "user_profile_upsert_failed", {
+			traceId,
+			room,
+			status: response.status,
+		});
+	}
+}
+
 export class Chat extends Server<Env> {
 	static options = { hibernate: true };
 
 	messages = [] as ChatMessage[];
+	usersSessions = new Map<string, PlayroomUsersSessionInfo>();
+	users = new Map<string, PlayroomUserProfile>();
+
+	normalizeUserId(userId: string): string {
+		return userId.trim().replace(/-/g, "").toLowerCase();
+	}
+
+	parseSpectators(raw: string | null): string[] {
+		if (!raw) return [];
+		try {
+			const parsed = JSON.parse(raw) as unknown;
+			if (!Array.isArray(parsed)) return [];
+			return parsed
+				.filter((entry): entry is string => typeof entry === "string")
+				.map((entry) => this.normalizeUserId(entry))
+				.filter((entry, index, list) => entry.length > 0 && list.indexOf(entry) === index);
+		} catch {
+			return [];
+		}
+	}
+
+	serializeSpectators(spectatorUserIds: string[]): string {
+		return JSON.stringify(spectatorUserIds);
+	}
+
+	loadUserProfile(userId: string): PlayroomUserProfile | null {
+		const normalizedUserId = this.normalizeUserId(userId);
+		if (!normalizedUserId) return null;
+
+		const existing = this.users.get(normalizedUserId);
+		if (existing) return existing;
+
+		const rows = this.ctx.storage.sql
+			.exec(
+				`SELECT user_id, name, image_url, updated_at
+				 FROM users
+				 WHERE user_id = ?`,
+				normalizedUserId,
+			)
+			.toArray() as Array<{
+				user_id: string;
+				name: string;
+				image_url: string | null;
+				updated_at: number | null;
+			}>;
+
+		const row = rows[0] ?? null;
+
+		if (!row) return null;
+
+		const profile: PlayroomUserProfile = {
+			userId: row.user_id,
+			name: row.name,
+			imageUrl: row.image_url,
+			updatedAt: row.updated_at ?? Date.now(),
+		};
+
+		this.users.set(profile.userId, profile);
+		return profile;
+	}
+
+	upsertUserProfile(profile: {
+		userId: string;
+		name: string;
+		imageUrl: string | null;
+	}): PlayroomUserProfile {
+		const normalizedUserId = this.normalizeUserId(profile.userId);
+		const name = profile.name.trim();
+		const updatedProfile: PlayroomUserProfile = {
+			userId: normalizedUserId,
+			name: name || normalizedUserId,
+			imageUrl: profile.imageUrl,
+			updatedAt: Date.now(),
+		};
+
+		this.ctx.storage.sql.exec(
+			`INSERT INTO users (user_id, name, image_url, updated_at)
+			 VALUES (?, ?, ?, ?)
+			 ON CONFLICT (user_id)
+			 DO UPDATE SET
+				name = excluded.name,
+				image_url = excluded.image_url,
+				updated_at = excluded.updated_at`,
+			updatedProfile.userId,
+			updatedProfile.name,
+			updatedProfile.imageUrl,
+			updatedProfile.updatedAt,
+		);
+
+		this.users.set(updatedProfile.userId, updatedProfile);
+		return updatedProfile;
+	}
+
+	listProfilesForSession(session: PlayroomUsersSessionInfo): PlayroomUserProfile[] {
+		const userIds = [
+			session.playerOneUserId,
+			session.playerTwoUserId,
+			...session.spectatorUserIds,
+		]
+			.filter((id): id is string => Boolean(id))
+			.map((id) => this.normalizeUserId(id))
+			.filter((id, index, list) => id.length > 0 && list.indexOf(id) === index);
+
+		const profiles: PlayroomUserProfile[] = [];
+		for (const userId of userIds) {
+			const profile = this.loadUserProfile(userId);
+			if (profile) profiles.push(profile);
+		}
+		return profiles;
+	}
+
+	loadUsersSession(playroomSessionId: string): PlayroomUsersSessionInfo | null {
+		const existing = this.usersSessions.get(playroomSessionId);
+		if (existing) return existing;
+
+		const rows = this.ctx.storage.sql
+			.exec(
+				`SELECT playroom_session_id, player_one_user_id, player_two_user_id, spectators_json, updated_at
+				 FROM playroom_users
+				 WHERE playroom_session_id = ?`,
+				playroomSessionId,
+			)
+			.toArray() as Array<{
+				playroom_session_id: string;
+				player_one_user_id: string | null;
+				player_two_user_id: string | null;
+				spectators_json: string | null;
+				updated_at: number | null;
+			}>;
+
+		const row = rows[0] ?? null;
+
+		if (!row) return null;
+
+		const session: PlayroomUsersSessionInfo = {
+			playroomSessionId: row.playroom_session_id,
+			playerOneUserId: row.player_one_user_id,
+			playerTwoUserId: row.player_two_user_id,
+			spectatorUserIds: this.parseSpectators(row.spectators_json),
+			updatedAt: row.updated_at ?? Date.now(),
+		};
+
+		this.usersSessions.set(playroomSessionId, session);
+		return session;
+	}
+
+	upsertUsersSession(session: PlayroomUsersSessionInfo): PlayroomUsersSessionInfo {
+		const normalized: PlayroomUsersSessionInfo = {
+			playroomSessionId: session.playroomSessionId,
+			playerOneUserId: session.playerOneUserId
+				? this.normalizeUserId(session.playerOneUserId)
+				: null,
+			playerTwoUserId: session.playerTwoUserId
+				? this.normalizeUserId(session.playerTwoUserId)
+				: null,
+			spectatorUserIds: session.spectatorUserIds
+				.map((id) => this.normalizeUserId(id))
+				.filter((id, index, list) => id.length > 0 && list.indexOf(id) === index),
+			updatedAt: Date.now(),
+		};
+
+		this.ctx.storage.sql.exec(
+			`INSERT INTO playroom_users (playroom_session_id, player_one_user_id, player_two_user_id, spectators_json, updated_at)
+			 VALUES (?, ?, ?, ?, ?)
+			 ON CONFLICT (playroom_session_id)
+			 DO UPDATE SET
+				player_one_user_id = excluded.player_one_user_id,
+				player_two_user_id = excluded.player_two_user_id,
+				spectators_json = excluded.spectators_json,
+				updated_at = excluded.updated_at`,
+			normalized.playroomSessionId,
+			normalized.playerOneUserId,
+			normalized.playerTwoUserId,
+			this.serializeSpectators(normalized.spectatorUserIds),
+			normalized.updatedAt,
+		);
+
+		this.usersSessions.set(normalized.playroomSessionId, normalized);
+		return normalized;
+	}
+
+	registerPlayroomUser(args: {
+		role: PlayroomTokenRole;
+		userId: string;
+		playroomSessionId: string;
+	}): PlayroomUsersSessionInfo {
+		const normalizedUserId = this.normalizeUserId(args.userId);
+		const current =
+			this.loadUsersSession(args.playroomSessionId) ?? {
+				playroomSessionId: args.playroomSessionId,
+				playerOneUserId: null,
+				playerTwoUserId: null,
+				spectatorUserIds: [],
+				updatedAt: Date.now(),
+			};
+
+		if (args.role === PlayroomTokenRole.CREATOR) {
+			return this.upsertUsersSession({
+				...current,
+				playerOneUserId: normalizedUserId,
+			});
+		}
+
+		if (args.role === PlayroomTokenRole.INVITED) {
+			return this.upsertUsersSession({
+				...current,
+				playerTwoUserId: normalizedUserId,
+			});
+		}
+
+		if (!current.spectatorUserIds.includes(normalizedUserId)) {
+			current.spectatorUserIds = [...current.spectatorUserIds, normalizedUserId];
+		}
+
+		return this.upsertUsersSession(current);
+	}
 
 	broadcastMessage(message: Message, exclude?: string[]) {
 		this.broadcast(JSON.stringify(message), exclude);
+	}
+
+	async onRequest(request: Request): Promise<Response> {
+		const url = new URL(request.url);
+		const op = url.searchParams.get("op");
+
+		if (request.method === "POST" && op === "upsert") {
+			const internalHeader = request.headers.get("x-kismo-internal-upsert");
+			if (internalHeader !== "1") {
+				return jsonResponse({ ok: false, reason: "forbidden" }, 403);
+			}
+
+			const payload = (await request.json()) as {
+				userId?: string;
+				name?: string;
+				imageUrl?: string | null;
+			};
+
+			if (
+				typeof payload.userId !== "string" ||
+				typeof payload.name !== "string"
+			) {
+				return jsonResponse({ ok: false, reason: "invalid_payload" }, 400);
+			}
+
+			const profile = this.upsertUserProfile({
+				userId: payload.userId,
+				name: payload.name,
+				imageUrl: typeof payload.imageUrl === "string" ? payload.imageUrl : null,
+			});
+			return jsonResponse({ ok: true, profile });
+		}
+
+		if (request.method === "GET" && op === "get-user-profile") {
+			const userId = url.searchParams.get("userId") || "";
+			const profile = this.loadUserProfile(userId);
+			return jsonResponse({ ok: true, profile });
+		}
+
+		return jsonResponse({ ok: false, reason: "not_found" }, 404);
 	}
 
 	onStart() {
@@ -347,6 +667,25 @@ export class Chat extends Server<Env> {
 		// create the messages table if it doesn't exist
 		this.ctx.storage.sql.exec(
 			`CREATE TABLE IF NOT EXISTS messages (id TEXT PRIMARY KEY, user TEXT, role TEXT, content TEXT)`,
+		);
+
+		this.ctx.storage.sql.exec(
+			`CREATE TABLE IF NOT EXISTS playroom_users (
+				playroom_session_id TEXT PRIMARY KEY,
+				player_one_user_id TEXT,
+				player_two_user_id TEXT,
+				spectators_json TEXT NOT NULL DEFAULT '[]',
+				updated_at INTEGER NOT NULL
+			)`,
+		);
+
+		this.ctx.storage.sql.exec(
+			`CREATE TABLE IF NOT EXISTS users (
+				user_id TEXT PRIMARY KEY,
+				name TEXT NOT NULL,
+				image_url TEXT,
+				updated_at INTEGER NOT NULL
+			)`,
 		);
 
 		// load the messages from the database
@@ -396,6 +735,23 @@ export class Chat extends Server<Env> {
 
 		// let's update our local messages store
 		const parsed = JSON.parse(message as string) as Message;
+		if (parsed.type === "playroom-users-register") {
+			const session = this.registerPlayroomUser({
+				role: parsed.role,
+				userId: parsed.userId,
+				playroomSessionId: parsed.playroomSessionId,
+			});
+			const users = this.listProfilesForSession(session);
+			this.broadcast(
+				JSON.stringify({
+					type: "playroom-users-sync",
+					session,
+					users,
+				} satisfies Message),
+			);
+			return;
+		}
+
 		if (parsed.type === "add" || parsed.type === "update") {
 			this.saveMessage(parsed);
 		}
@@ -438,7 +794,7 @@ export default {
 						requestTokenRaw: token,
 						dbInvitedTokenRaw: verification.debug?.dbInvitedTokenRaw ?? null,
 					});
-					if (verification.role === "invited") {
+					if (verification.role === PlayroomTokenRole.INVITED) {
 						authLog("info", "invited_id_mapping_dev", {
 							note: "DEV ONLY: token claim playroomSessionId is not DB record id",
 							tokenPlayroomSessionId:
@@ -577,6 +933,24 @@ export default {
 					isWebSocketUpgrade: wsUpgrade,
 				});
 				return unauthorizedResponse();
+			}
+
+			try {
+				await upsertAuthenticatedUserProfile({
+					env,
+					token,
+					requestUrl: url,
+					traceId,
+				});
+			} catch (error) {
+				authLog("warn", "user_profile_upsert_error", {
+					traceId,
+					path: url.pathname,
+					error:
+						error instanceof Error
+							? { name: error.name, message: error.message }
+							: String(error),
+				});
 			}
 
 			const partykitResponse = await routePartykitRequest(request, { ...env });

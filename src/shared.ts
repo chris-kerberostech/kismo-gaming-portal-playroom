@@ -5,6 +5,27 @@ export type ChatMessage = {
 	role: "user" | "assistant";
 };
 
+export enum PlayroomTokenRole {
+  CREATOR = "creator",
+  INVITED = "invited",
+  SPECTATOR = "spectator",
+}
+
+export type PlayroomUsersSessionInfo = {
+	playroomSessionId: string;
+	playerOneUserId: string | null;
+	playerTwoUserId: string | null;
+	spectatorUserIds: string[];
+	updatedAt: number;
+};
+
+export type PlayroomUserProfile = {
+	userId: string;
+	name: string;
+	imageUrl: string | null;
+	updatedAt: number;
+};
+
 export type Message =
 	| {
 			type: "add";
@@ -23,6 +44,17 @@ export type Message =
 	| {
 			type: "all";
 			messages: ChatMessage[];
+	  }
+	| {
+			type: "playroom-users-register";
+			role: PlayroomTokenRole;
+			userId: string;
+			playroomSessionId: string;
+	  }
+	| {
+			type: "playroom-users-sync";
+			session: PlayroomUsersSessionInfo;
+			users: PlayroomUserProfile[];
 	  };
 
 export const names = [

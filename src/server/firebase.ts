@@ -10,12 +10,15 @@ import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import { getAuth, signInWithCustomToken, type Auth, type UserCredential } from "firebase/auth";
 import { getDataConnect, type DataConnect } from "firebase/data-connect";
 
+import { PlayroomTokenRole } from "../shared";
+
 import {
 	connectorConfig,
 	fetchPlayroomInvitedUserToken,
 	fetchPlayroomParticipantToken,
 	fetchPlayroomSpectators,
 	getActivePlayroomSessionByPlayroomSessionId,
+	getUser,
 	isUserInPlayroomSpectators,
 } from "@kismoportal-dataconnect/generated";
 
@@ -36,7 +39,7 @@ type VerifyPlayroomTokenResult = {
 	activeCount: number;
 };
 
-type PlayroomRole = "creator" | "invited" | "spectator";
+type PlayroomRole = PlayroomTokenRole;
 
 type ParsedPlayroomTokenClaims = {
 	role: PlayroomRole;
@@ -45,6 +48,18 @@ type ParsedPlayroomTokenClaims = {
 	openedByUserId: string;
 	invitedUserId?: string;
 	userId: string;
+};
+
+export type ParsedPlayroomTokenIdentity = {
+	role: PlayroomRole;
+	playroomSessionId: string;
+	userId: string;
+};
+
+export type DataConnectUserProfile = {
+	userId: string;
+	name: string;
+	imageUrl: string | null;
 };
 
 export type VerifyPlayroomTokenAccessResult = {
@@ -143,6 +158,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function normalizePrivateKey(value: string): string {
 	return value.replace(/\\n/g, "\n").replace(/\r\n/g, "\n");
+}
+
+function canonicalizeUuidForDataConnect(value: string): string {
+	const trimmed = value.trim().toLowerCase();
+	if (!trimmed) return "";
+	if (trimmed.includes("-") && trimmed.length === 36) return trimmed;
+
+	const compact = trimmed.replace(/-/g, "");
+	if (compact.length !== 32) return trimmed;
+
+	return [
+		compact.slice(0, 8),
+		compact.slice(8, 12),
+		compact.slice(12, 16),
+		compact.slice(16, 20),
+		compact.slice(20),
+	].join("-");
 }
 
 function normalizeServiceAccount(value: unknown): ServiceAccount {
@@ -457,7 +489,11 @@ function resolveClaimString(
 }
 
 function parseRole(value: string | null): PlayroomRole | null {
-	if (value === "creator" || value === "invited" || value === "spectator") {
+	if (
+		value === PlayroomTokenRole.CREATOR ||
+		value === PlayroomTokenRole.INVITED ||
+		value === PlayroomTokenRole.SPECTATOR
+	) {
 		return value;
 	}
 	return null;
@@ -486,6 +522,40 @@ function parsePlayroomTokenClaims(token: string): ParsedPlayroomTokenClaims | nu
 		openedByUserId,
 		invitedUserId,
 		userId,
+	};
+}
+
+export function parsePlayroomTokenIdentity(token: string): ParsedPlayroomTokenIdentity | null {
+	const claims = parsePlayroomTokenClaims(token);
+	if (!claims) return null;
+	return {
+		role: claims.role,
+		playroomSessionId: claims.playroomSessionId,
+		userId: claims.userId,
+	};
+}
+
+export async function fetchUserProfileFromDataConnect(
+	userId: string,
+	env?: FirebaseEnv,
+): Promise<DataConnectUserProfile | null> {
+	const normalizedUserId = normalizeUserIdForDataConnect(userId);
+	if (!normalizedUserId) return null;
+
+	await ensureDataConnectAuth(env);
+	const { dataConnect } = ensureWebClients(env);
+	const canonicalId = canonicalizeUuidForDataConnect(userId);
+	const result = await getUser(dataConnect, {
+		id: canonicalId,
+	});
+
+	const user = result.data.user;
+	if (!user) return null;
+
+	return {
+		userId: normalizeUserIdForDataConnect(user.id),
+		name: user.name,
+		imageUrl: user.imageUrl || null,
 	};
 }
 
@@ -584,7 +654,7 @@ export async function verifyPlayroomTokenAccessWithDataConnect(
 
 	const session = sessions[0]!;
 
-	if (tokenClaims.role === "creator") {
+	if (tokenClaims.role === PlayroomTokenRole.CREATOR) {
 		const matches =
 			typeof session.jwtTokenCreator === "string" && session.jwtTokenCreator === token;
 		return {
@@ -602,7 +672,7 @@ export async function verifyPlayroomTokenAccessWithDataConnect(
 		};
 	}
 
-	if (tokenClaims.role === "invited") {
+	if (tokenClaims.role === PlayroomTokenRole.INVITED) {
 		const invitedTokenResult = await fetchPlayroomInvitedUserToken(dataConnect, {
 			id: session.id,
 		});

@@ -11,6 +11,7 @@ import "../styles/score4/board.css";
 import "../styles/score4/styles.css";
 import { useTranslation } from 'react-i18next';
 import { Score4Context, GamePlayedType } from "../contexts/Score4Context";
+import { useUserContext } from "../contexts/UserContext";
 import { COLOR_PLAYER, COLOR_KISMO, VOICE_VOL } from "../Constants";
 import NewGameAlert from "../components/score4/NewGameAlert";
 
@@ -142,6 +143,59 @@ function hasImmediateWin(board, player) {
     return { win: false, col: null };
 }
 
+function decodeBase64UrlJsonSegment(input) {
+    const normalized = input.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    try {
+        const decoded = atob(padded);
+        return JSON.parse(decoded);
+    } catch {
+        return null;
+    }
+}
+
+function parseClaimString(claims, key) {
+    const raw = claims[key];
+    if (typeof raw !== "string") return null;
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+
+    const lowerKey = key.toLowerCase();
+    const lowerTrimmed = trimmed.toLowerCase();
+    if (!lowerTrimmed.startsWith(lowerKey)) return trimmed;
+
+    const suffix = trimmed.slice(key.length);
+    if (suffix.startsWith("=") || suffix.startsWith(":")) {
+        const value = suffix.slice(1).trim();
+        return value || null;
+    }
+
+    return trimmed;
+}
+
+function normalizeUserId(userId) {
+    return userId.trim().replace(/-/g, "").toLowerCase();
+}
+
+function parseUserIdFromToken(token) {
+    if (!token) return null;
+
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+
+    const payload = decodeBase64UrlJsonSegment(parts[1]);
+    if (!payload || typeof payload !== "object") return null;
+
+    const claims =
+        payload.claims && typeof payload.claims === "object" && !Array.isArray(payload.claims)
+            ? payload.claims
+            : null;
+    if (!claims) return null;
+
+    const userId = parseClaimString(claims, "userid");
+    return userId ? normalizeUserId(userId) : null;
+}
+
 // ===== Component =====
 export default function Score4() {
 
@@ -187,7 +241,40 @@ export default function Score4() {
     // chris: update : use the values from the context
     // const [userAvatarUrl, setUserAvatarUrl] = useState("https://i.pravatar.cc/150?img=5");
     // const [userNickname, setUserNickname] = useState("User");
-    const { userAvatarUrl, userNickname, userScore, gamePlayed, setGamePlayed, updateUserScore } = useContext(Score4Context);
+    const {
+        userAvatarUrl: fallbackUserAvatarUrl,
+        userNickname: fallbackUserNickname,
+        userScore,
+        gamePlayed,
+        setGamePlayed,
+        updateUserScore,
+    } = useContext(Score4Context);
+    const { getUserProfileById, fetchUserProfileById } = useUserContext();
+
+    const room = React.useMemo(() => {
+        const params = new URL(window.location.href).searchParams;
+        return params.get("room") || "lobby";
+    }, []);
+
+    const authenticatedUserId = React.useMemo(() => {
+        const params = new URL(window.location.href).searchParams;
+        return parseUserIdFromToken(params.get("token") || "");
+    }, []);
+
+    const resolvedProfile = authenticatedUserId ? getUserProfileById(authenticatedUserId) : null;
+    const resolvedUserAvatarUrl = resolvedProfile?.imageUrl || fallbackUserAvatarUrl;
+    const resolvedUserNickname = resolvedProfile?.name || fallbackUserNickname;
+
+    useEffect(() => {
+        if (!authenticatedUserId || !room) return;
+
+        const cached = getUserProfileById(authenticatedUserId);
+        if (cached) return;
+
+        fetchUserProfileById(room, authenticatedUserId).catch(() => {
+            // Keep fallback profile values when durable profile retrieval fails.
+        });
+    }, [authenticatedUserId, room, getUserProfileById, fetchUserProfileById]);
 
     // ---------- SESSION SPARKS ----------
     // chris: session sparks are the sparks you earn during a game session
@@ -547,8 +634,8 @@ export default function Score4() {
                 }}
             >
                 <UserAvatar
-                    url={userAvatarUrl}
-                    nickname={userNickname}
+                    url={resolvedUserAvatarUrl}
+                    nickname={resolvedUserNickname}
                     active={currentPlayer === COLOR_PLAYER && !gameOver}
                 />
                 <div

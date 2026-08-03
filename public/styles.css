@@ -93,6 +93,69 @@ body {
 	color: var(--text-secondary);
 }
 
+.portal-header-actions {
+	display: flex;
+	align-items: center;
+	gap: 0.65rem;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+.portal-realtime-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.45rem;
+	padding: 0.42rem 0.7rem;
+	border-radius: 999px;
+	font-size: 0.82rem;
+	font-weight: 700;
+	border: 1px solid rgba(123, 167, 255, 0.45);
+	background: rgba(6, 12, 28, 0.85);
+	color: var(--text-secondary);
+	letter-spacing: 0.01em;
+}
+
+.portal-realtime-status::before {
+	content: "";
+	width: 0.52rem;
+	height: 0.52rem;
+	border-radius: 999px;
+	background: #7e8ba8;
+	box-shadow: 0 0 0.35rem rgba(126, 139, 168, 0.45);
+}
+
+.portal-realtime-status.status-connected {
+	border-color: rgba(61, 217, 164, 0.65);
+	color: #d8fff2;
+}
+
+.portal-realtime-status.status-connected::before {
+	background: #3dd9a4;
+	box-shadow: 0 0 0.45rem rgba(61, 217, 164, 0.85);
+}
+
+.portal-realtime-status.status-reconnecting,
+.portal-realtime-status.status-connecting {
+	border-color: rgba(255, 196, 107, 0.72);
+	color: #ffefcf;
+}
+
+.portal-realtime-status.status-reconnecting::before,
+.portal-realtime-status.status-connecting::before {
+	background: #ffc46b;
+	box-shadow: 0 0 0.45rem rgba(255, 196, 107, 0.75);
+}
+
+.portal-realtime-status.status-disconnected {
+	border-color: rgba(255, 122, 122, 0.72);
+	color: #ffe0e0;
+}
+
+.portal-realtime-status.status-disconnected::before {
+	background: #ff7a7a;
+	box-shadow: 0 0 0.45rem rgba(255, 122, 122, 0.82);
+}
+
 .portal-chat-toggle {
 	border: 1px solid rgba(61, 217, 164, 0.8);
 	border-radius: 999px;
@@ -245,5 +308,14 @@ body {
 
 	.portal-shell {
 		padding: 0.65rem;
+	}
+
+	.portal-header {
+		align-items: flex-start;
+	}
+
+	.portal-header-actions {
+		width: 100%;
+		justify-content: flex-start;
 	}
 }
