@@ -53,6 +53,10 @@ export type Message =
 			playroomSessionId: string;
 	  }
 	| {
+			type: "user-score-update";
+			score: number;
+	  }
+	| {
 			type: "playroom-users-sync";
 			session: PlayroomUsersSessionInfo;
 			users: PlayroomUserProfile[];

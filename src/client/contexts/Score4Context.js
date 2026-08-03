@@ -25,8 +25,8 @@ const Score4ContextType = {
 
 export const Score4Context = React.createContext(Score4ContextType);
 
-const Score4ContextProvider = ({ children }) => {
-    const [userScore, setUserScore] = useState(0);
+const Score4ContextProvider = ({ children, initialUserScore = 0, onUserScoreChange = null }) => {
+    const [userScore, setUserScore] = useState(initialUserScore || 0);
     const [userLocale, setUserLocale] = useState('en');
     const [userAvatarUrl, setUserAvatarUrl] = useState("https://i.pravatar.cc/150?img=5");
     const [userNickname, setUserNickname] = useState("User");
@@ -60,6 +60,11 @@ const Score4ContextProvider = ({ children }) => {
         loadQuotes(userLocale);
     }, [userLocale]);
 
+    useEffect(() => {
+        if (typeof initialUserScore !== "number") return;
+        setUserScore(initialUserScore);
+    }, [initialUserScore]);
+
     // Change language function
     const changeLanguage = (lng) => {
         if (lng !== i18n.language) {
@@ -69,7 +74,14 @@ const Score4ContextProvider = ({ children }) => {
     };
 
     function updateUserScore(newScore) {
-        setUserScore(newScore);
+        setUserScore((current) => {
+            if (current === newScore) return current;
+            if (typeof onUserScoreChange === "function") {
+                onUserScoreChange(newScore);
+                console.debug("User score updated to", newScore);
+            }
+            return newScore;
+        });
     }
 
     return <Score4Context.Provider value={{

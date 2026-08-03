@@ -1,5 +1,6 @@
 import {
 	type Connection,
+	type ConnectionContext,
 	Server,
 	type WSMessage,
 	routePartykitRequest,
@@ -431,6 +432,18 @@ export class Chat extends Server<Env> {
 	messages = [] as ChatMessage[];
 	usersSessions = new Map<string, PlayroomUsersSessionInfo>();
 	users = new Map<string, PlayroomUserProfile>();
+	connectionUsers = new Map<string, { userId: string; playroomSessionId: string }>();
+	pendingScoreUpdates = new Map<string, number>();
+
+	isDevRuntime(): boolean {
+		const runtimeEnv = this.env as Partial<AuthEnv>;
+		// Treat unspecified environment as development-like for local wrangler runs.
+		if (!runtimeEnv.NODE_ENV && !runtimeEnv.ENVIRONMENT) return true;
+		return (
+			runtimeEnv.NODE_ENV !== "production" &&
+			runtimeEnv.ENVIRONMENT !== "production"
+		);
+	}
 
 	normalizeUserId(userId: string): string {
 		return userId.trim().replace(/-/g, "").toLowerCase();
@@ -652,6 +665,38 @@ export class Chat extends Server<Env> {
 		return this.upsertUsersSession(current);
 	}
 
+	updateUserScore(userId: string, score: number): PlayroomUserProfile {
+		const normalizedUserId = this.normalizeUserId(userId);
+		const normalizedScore = Number.isFinite(score) ? score : 0;
+		const existing = this.loadUserProfile(normalizedUserId);
+
+		return this.upsertUserProfile({
+			userId: normalizedUserId,
+			name: existing?.name ?? normalizedUserId,
+			imageUrl: existing?.imageUrl ?? null,
+			score: normalizedScore,
+		});
+	}
+
+	broadcastUsersSync(playroomSessionId: string) {
+		const session =
+			this.loadUsersSession(playroomSessionId) ?? {
+				playroomSessionId,
+				playerOneUserId: null,
+				playerTwoUserId: null,
+				spectatorUserIds: [],
+				updatedAt: Date.now(),
+			};
+		const users = this.listProfilesForSession(session);
+		this.broadcast(
+			JSON.stringify({
+				type: "playroom-users-sync",
+				session,
+				users,
+			} satisfies Message),
+		);
+	}
+
 	broadcastMessage(message: Message, exclude?: string[]) {
 		this.broadcast(JSON.stringify(message), exclude);
 	}
@@ -741,13 +786,34 @@ export class Chat extends Server<Env> {
 			.toArray() as ChatMessage[];
 	}
 
-	onConnect(connection: Connection) {
+	onConnect(connection: Connection, ctx: ConnectionContext) {
+		const tokenFromQuery = new URL(ctx.request.url).searchParams.get("token") || "";
+		const identity = tokenFromQuery ? parsePlayroomTokenIdentity(tokenFromQuery) : null;
+		if (identity) {
+			this.connectionUsers.set(connection.id, {
+				userId: this.normalizeUserId(identity.userId),
+				playroomSessionId: identity.playroomSessionId,
+			});
+			if (this.isDevRuntime()) {
+				authLog("info", "connection_user_bound_from_token_dev", {
+					connectionId: connection.id,
+					playroomSessionId: identity.playroomSessionId,
+					userId: this.normalizeUserId(identity.userId),
+				});
+			}
+		}
+
 		connection.send(
 			JSON.stringify({
 				type: "all",
 				messages: this.messages,
 			} satisfies Message),
 		);
+	}
+
+	onClose(connection: Connection) {
+		this.connectionUsers.delete(connection.id);
+		this.pendingScoreUpdates.delete(connection.id);
 	}
 
 	saveMessage(message: ChatMessage) {
@@ -777,29 +843,91 @@ export class Chat extends Server<Env> {
 	}
 
 	onMessage(connection: Connection, message: WSMessage) {
-		// let's broadcast the raw message to everyone else
-		this.broadcast(message);
-
-		// let's update our local messages store
 		const parsed = JSON.parse(message as string) as Message;
 		if (parsed.type === "playroom-users-register") {
+			this.connectionUsers.set(connection.id, {
+				userId: this.normalizeUserId(parsed.userId),
+				playroomSessionId: parsed.playroomSessionId,
+			});
 			const session = this.registerPlayroomUser({
 				role: parsed.role,
 				userId: parsed.userId,
 				playroomSessionId: parsed.playroomSessionId,
 			});
 			const users = this.listProfilesForSession(session);
+
+			const pendingScore = this.pendingScoreUpdates.get(connection.id);
+			if (typeof pendingScore === "number" && Number.isFinite(pendingScore)) {
+				this.pendingScoreUpdates.delete(connection.id);
+				this.updateUserScore(parsed.userId, pendingScore);
+				if (this.isDevRuntime()) {
+					authLog("info", "user_score_runtime_update_queued_applied_dev", {
+						connectionId: connection.id,
+						playroomSessionId: parsed.playroomSessionId,
+						userId: this.normalizeUserId(parsed.userId),
+						scoreApplied: pendingScore,
+					});
+				}
+			}
+
 			this.broadcast(
 				JSON.stringify({
 					type: "playroom-users-sync",
 					session,
-					users,
+					users: this.listProfilesForSession(session),
 				} satisfies Message),
 			);
 			return;
 		}
 
+		if (parsed.type === "user-score-update") {
+			const bound = this.connectionUsers.get(connection.id);
+			if (!bound) {
+				if (Number.isFinite(parsed.score)) {
+					this.pendingScoreUpdates.set(connection.id, parsed.score);
+				}
+				if (this.isDevRuntime()) {
+					authLog("warn", "user_score_runtime_update_dropped_dev", {
+						reason: "queued_until_register",
+						connectionId: connection.id,
+						scoreIncoming: parsed.score,
+					});
+				}
+				return;
+			}
+			if (!Number.isFinite(parsed.score)) {
+				if (this.isDevRuntime()) {
+					authLog("warn", "user_score_runtime_update_dropped_dev", {
+						reason: "invalid_score",
+						connectionId: connection.id,
+						playroomSessionId: bound.playroomSessionId,
+						userId: bound.userId,
+						scoreIncoming: parsed.score,
+					});
+				}
+				return;
+			}
+
+			const previousProfile = this.loadUserProfile(bound.userId);
+			const updatedProfile = this.updateUserScore(bound.userId, parsed.score);
+
+			if (this.isDevRuntime()) {
+				authLog("info", "user_score_runtime_update_dev", {
+					connectionId: connection.id,
+					playroomSessionId: bound.playroomSessionId,
+					userId: bound.userId,
+					scorePrevious: previousProfile?.score ?? null,
+					scoreIncoming: parsed.score,
+					scorePersisted: updatedProfile.score,
+				});
+			}
+
+			this.broadcastUsersSync(bound.playroomSessionId);
+			return;
+		}
+
 		if (parsed.type === "add" || parsed.type === "update") {
+			this.broadcast(message);
 			this.saveMessage(parsed);
 		}
 	}

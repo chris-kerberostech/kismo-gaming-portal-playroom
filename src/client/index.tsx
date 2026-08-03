@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { usePartySocket } from "partysocket/react";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { nanoid } from "nanoid";
 
 import {
@@ -239,6 +239,8 @@ function PortalRealtime({
 	const [name, setName] = useState("Player");
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [hasConnected, setHasConnected] = useState(false);
+	const scoreUpdateTimerRef = useRef<number | null>(null);
+	const pendingScoreRef = useRef<number | null>(null);
 	const {
 		setSession,
 		setUsers,
@@ -365,13 +367,65 @@ function PortalRealtime({
 		[name, socket],
 	);
 
+	const publishUserScoreUpdate = useCallback(
+		(newScore: number) => {
+			if (!identity) return;
+			if (!Number.isFinite(newScore)) return;
+
+			pendingScoreRef.current = newScore;
+			if (scoreUpdateTimerRef.current != null) {
+				clearTimeout(scoreUpdateTimerRef.current);
+			}
+
+			scoreUpdateTimerRef.current = window.setTimeout(() => {
+				const score = pendingScoreRef.current;
+				scoreUpdateTimerRef.current = null;
+				if (typeof score !== "number") return;
+				if (socket.readyState !== WebSocket.OPEN) return;
+
+				// Re-send register before score updates to guarantee server-side binding.
+				socket.send(
+					JSON.stringify({
+						type: "playroom-users-register",
+						role: identity.role,
+						userId: identity.userId,
+						playroomSessionId: identity.playroomSessionId,
+					} satisfies Message),
+				);
+
+				socket.send(
+					JSON.stringify({
+						type: "user-score-update",
+						score,
+					} satisfies Message),
+				);
+			}, 400);
+		},
+		[identity, socket],
+	);
+
+	useEffect(() => {
+		return () => {
+			if (scoreUpdateTimerRef.current != null) {
+				clearTimeout(scoreUpdateTimerRef.current);
+			}
+		};
+	}, []);
+
+	const myProfileScore = identity
+		? (getUserProfileById(identity.userId)?.score ?? 0)
+		: 0;
+
 	return (
 		<main className={`portal-main ${isChatOpen ? "chat-open" : "chat-closed"}`}>
 			{isChatOpen ? (
 				<ChatPanel room={room} messages={messages} onSend={sendChatMessage} name={name} />
 			) : null}
 			<section className="portal-game-panel" aria-label="Score4 game area">
-				<Score4ContextProvider>
+				<Score4ContextProvider
+					initialUserScore={myProfileScore}
+					onUserScoreChange={publishUserScoreUpdate}
+				>
 					<Score4 />
 				</Score4ContextProvider>
 			</section>
