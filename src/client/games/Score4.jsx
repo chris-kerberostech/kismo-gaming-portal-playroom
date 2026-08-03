@@ -264,6 +264,10 @@ export default function Score4() {
     const resolvedProfile = authenticatedUserId ? getUserProfileById(authenticatedUserId) : null;
     const resolvedUserAvatarUrl = resolvedProfile?.imageUrl || fallbackUserAvatarUrl;
     const resolvedUserNickname = resolvedProfile?.name || fallbackUserNickname;
+    const resolvedUserScore =
+        typeof resolvedProfile?.score === "number" ? resolvedProfile.score : userScore;
+
+    const [hasHydratedProfileScore, setHasHydratedProfileScore] = useState(false);
 
     useEffect(() => {
         if (!authenticatedUserId || !room) return;
@@ -276,11 +280,18 @@ export default function Score4() {
         });
     }, [authenticatedUserId, room, getUserProfileById, fetchUserProfileById]);
 
+    useEffect(() => {
+		if (hasHydratedProfileScore) return;
+		if (typeof resolvedProfile?.score !== "number") return;
+		setSessionSparks(resolvedProfile.score);
+		setHasHydratedProfileScore(true);
+	}, [hasHydratedProfileScore, resolvedProfile]);
+
     // ---------- SESSION SPARKS ----------
     // chris: session sparks are the sparks you earn during a game session
     // they should update based on the userScore the user has from the app
     // and when they change, the app should update also the user score
-    const [sessionSparks, setSessionSparks] = useState(userScore || 0);
+    const [sessionSparks, setSessionSparks] = useState(resolvedUserScore || 0);
     useEffect(() => {
         console.debug("Session sparks updated:", sessionSparks);
 

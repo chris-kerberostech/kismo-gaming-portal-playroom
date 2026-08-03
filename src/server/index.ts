@@ -353,6 +353,7 @@ async function upsertAuthenticatedUserProfile(args: {
 	traceId: string;
 }) {
 	const { env, token, requestUrl, traceId } = args;
+	const devMode = isDevRequest(env as AuthEnv, requestUrl);
 	const room = getPartyRoomFromPath(requestUrl.pathname);
 	if (!room) return;
 
@@ -363,6 +364,15 @@ async function upsertAuthenticatedUserProfile(args: {
 			path: requestUrl.pathname,
 		});
 		return;
+	}
+
+	if (devMode) {
+		authLog("info", "user_score_claim_parsed_dev", {
+			traceId,
+			room,
+			userId: identity.userId,
+			scoreFromTokenClaim: identity.score,
+		});
 	}
 
 	const profile = await fetchUserProfileFromDataConnect(identity.userId, env as AuthEnv);
@@ -383,8 +393,28 @@ async function upsertAuthenticatedUserProfile(args: {
 			"Content-Type": "application/json",
 			"x-kismo-internal-upsert": "1",
 		},
-		body: JSON.stringify(profile),
+		body: JSON.stringify({
+			...profile,
+			score: identity.score,
+		}),
 	});
+
+	if (devMode && response.ok) {
+		const payload = (await response.json()) as {
+			ok?: boolean;
+			profile?: {
+				userId?: string;
+				score?: number | null;
+			};
+		};
+		authLog("info", "user_score_persisted_dev", {
+			traceId,
+			room,
+			userId: payload.profile?.userId ?? identity.userId,
+			scoreFromTokenClaim: identity.score,
+			scoreStoredInDo: payload.profile?.score ?? null,
+		});
+	}
 
 	if (!response.ok) {
 		authLog("warn", "user_profile_upsert_failed", {
@@ -433,7 +463,7 @@ export class Chat extends Server<Env> {
 
 		const rows = this.ctx.storage.sql
 			.exec(
-				`SELECT user_id, name, image_url, updated_at
+				`SELECT user_id, name, image_url, score, updated_at
 				 FROM users
 				 WHERE user_id = ?`,
 				normalizedUserId,
@@ -442,6 +472,7 @@ export class Chat extends Server<Env> {
 				user_id: string;
 				name: string;
 				image_url: string | null;
+				score: number | null;
 				updated_at: number | null;
 			}>;
 
@@ -453,6 +484,7 @@ export class Chat extends Server<Env> {
 			userId: row.user_id,
 			name: row.name,
 			imageUrl: row.image_url,
+			score: row.score,
 			updatedAt: row.updated_at ?? Date.now(),
 		};
 
@@ -464,6 +496,7 @@ export class Chat extends Server<Env> {
 		userId: string;
 		name: string;
 		imageUrl: string | null;
+		score: number | null;
 	}): PlayroomUserProfile {
 		const normalizedUserId = this.normalizeUserId(profile.userId);
 		const name = profile.name.trim();
@@ -471,20 +504,23 @@ export class Chat extends Server<Env> {
 			userId: normalizedUserId,
 			name: name || normalizedUserId,
 			imageUrl: profile.imageUrl,
+			score: typeof profile.score === "number" ? profile.score : null,
 			updatedAt: Date.now(),
 		};
 
 		this.ctx.storage.sql.exec(
-			`INSERT INTO users (user_id, name, image_url, updated_at)
-			 VALUES (?, ?, ?, ?)
+			`INSERT INTO users (user_id, name, image_url, score, updated_at)
+			 VALUES (?, ?, ?, ?, ?)
 			 ON CONFLICT (user_id)
 			 DO UPDATE SET
 				name = excluded.name,
 				image_url = excluded.image_url,
+				score = excluded.score,
 				updated_at = excluded.updated_at`,
 			updatedProfile.userId,
 			updatedProfile.name,
 			updatedProfile.imageUrl,
+			updatedProfile.score,
 			updatedProfile.updatedAt,
 		);
 
@@ -634,6 +670,7 @@ export class Chat extends Server<Env> {
 				userId?: string;
 				name?: string;
 				imageUrl?: string | null;
+				score?: number | null;
 			};
 
 			if (
@@ -647,6 +684,7 @@ export class Chat extends Server<Env> {
 				userId: payload.userId,
 				name: payload.name,
 				imageUrl: typeof payload.imageUrl === "string" ? payload.imageUrl : null,
+				score: typeof payload.score === "number" ? payload.score : null,
 			});
 			return jsonResponse({ ok: true, profile });
 		}
@@ -684,9 +722,18 @@ export class Chat extends Server<Env> {
 				user_id TEXT PRIMARY KEY,
 				name TEXT NOT NULL,
 				image_url TEXT,
+				score REAL,
 				updated_at INTEGER NOT NULL
 			)`,
 		);
+
+		const usersTableColumns = this.ctx.storage.sql
+			.exec(`PRAGMA table_info(users)`)
+			.toArray() as Array<{ name: string }>;
+		const hasScoreColumn = usersTableColumns.some((column) => column.name === "score");
+		if (!hasScoreColumn) {
+			this.ctx.storage.sql.exec(`ALTER TABLE users ADD COLUMN score REAL`);
+		}
 
 		// load the messages from the database
 		this.messages = this.ctx.storage.sql

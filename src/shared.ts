@@ -23,6 +23,7 @@ export type PlayroomUserProfile = {
 	userId: string;
 	name: string;
 	imageUrl: string | null;
+	score: number | null;
 	updatedAt: number;
 };
 

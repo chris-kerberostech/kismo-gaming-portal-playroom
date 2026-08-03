@@ -48,18 +48,21 @@ type ParsedPlayroomTokenClaims = {
 	openedByUserId: string;
 	invitedUserId?: string;
 	userId: string;
+	score: number | null;
 };
 
 export type ParsedPlayroomTokenIdentity = {
 	role: PlayroomRole;
 	playroomSessionId: string;
 	userId: string;
+	score: number | null;
 };
 
 export type DataConnectUserProfile = {
 	userId: string;
 	name: string;
 	imageUrl: string | null;
+	score: number | null;
 };
 
 export type VerifyPlayroomTokenAccessResult = {
@@ -499,6 +502,13 @@ function parseRole(value: string | null): PlayroomRole | null {
 	return null;
 }
 
+function parseScore(value: string | null): number | null {
+	if (!value) return null;
+	const parsed = Number(value.trim());
+	if (!Number.isFinite(parsed)) return null;
+	return parsed;
+}
+
 function parsePlayroomTokenClaims(token: string): ParsedPlayroomTokenClaims | null {
 	const payload = parseJwtPayload(token);
 	if (!payload) return null;
@@ -510,6 +520,7 @@ function parsePlayroomTokenClaims(token: string): ParsedPlayroomTokenClaims | nu
 	const openedByUserId = resolveClaimString(claims, "openedByUserId");
 	const userId = resolveClaimString(claims, "userid");
 	const invitedUserId = resolveClaimString(claims, "invitedUserId") ?? undefined;
+	const score = parseScore(resolveClaimString(claims, "score"));
 
 	if (!role || !game || !playroomSessionId || !openedByUserId || !userId) {
 		return null;
@@ -522,6 +533,7 @@ function parsePlayroomTokenClaims(token: string): ParsedPlayroomTokenClaims | nu
 		openedByUserId,
 		invitedUserId,
 		userId,
+		score,
 	};
 }
 
@@ -532,6 +544,7 @@ export function parsePlayroomTokenIdentity(token: string): ParsedPlayroomTokenId
 		role: claims.role,
 		playroomSessionId: claims.playroomSessionId,
 		userId: claims.userId,
+		score: claims.score,
 	};
 }
 
@@ -556,6 +569,7 @@ export async function fetchUserProfileFromDataConnect(
 		userId: normalizeUserIdForDataConnect(user.id),
 		name: user.name,
 		imageUrl: user.imageUrl || null,
+		score: null,
 	};
 }
 

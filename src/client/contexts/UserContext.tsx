@@ -63,6 +63,7 @@ function normalizeProfile(profile: PlayroomUserProfile): PlayroomUserProfile {
 		userId: normalizeUserId(profile.userId),
 		name: profile.name.trim(),
 		imageUrl: profile.imageUrl,
+		score: typeof profile.score === "number" ? profile.score : null,
 		updatedAt: profile.updatedAt,
 	};
 }
