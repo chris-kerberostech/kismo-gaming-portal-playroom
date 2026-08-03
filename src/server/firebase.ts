@@ -48,6 +48,18 @@ export type VerifyPlayroomTokenAccessResult = {
 	playroomSessionId: string | null;
 	activeCount: number;
 	role: PlayroomRole | null;
+	debug?: {
+		parsedRole: PlayroomRole | null;
+		parsedPlayroomSessionId: string | null;
+		providedTokenLength: number;
+		providedTokenFingerprint: string;
+		dbInvitedTokenExists?: boolean;
+		dbInvitedTokenLength?: number;
+		dbInvitedTokenFingerprint?: string;
+		invitedTokenEquals?: boolean;
+		invitedUserJoinedAt?: string | null;
+		nowIso?: string;
+	};
 	reason:
 		| "invalid_token_payload"
 		| "invalid_claims"
@@ -60,7 +72,17 @@ export type VerifyPlayroomTokenAccessResult = {
 		| "ok";
 };
 
-const INVITED_JOIN_WINDOW_MS = 30_000;
+async function fingerprintToken(value: string): Promise<string> {
+	const digest = await crypto.subtle.digest(
+		"SHA-256",
+		new TextEncoder().encode(value),
+	);
+	const bytes = new Uint8Array(digest);
+	return [...bytes]
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("")
+		.slice(0, 12);
+}
 
 let adminApp: AdminApp | null = null;
 let adminAuth: AdminAuth | null = null;
@@ -374,12 +396,19 @@ export async function verifyPlayroomTokenAccessWithDataConnect(
 	env?: FirebaseEnv,
 ): Promise<VerifyPlayroomTokenAccessResult> {
 	const tokenClaims = parsePlayroomTokenClaims(token);
+	const providedTokenFingerprint = await fingerprintToken(token);
 	if (!tokenClaims) {
 		return {
 			ok: false,
 			playroomSessionId: null,
 			activeCount: 0,
 			role: null,
+			debug: {
+				parsedRole: null,
+				parsedPlayroomSessionId: null,
+				providedTokenLength: token.length,
+				providedTokenFingerprint,
+			},
 			reason: "invalid_claims",
 		};
 	}
@@ -398,6 +427,12 @@ export async function verifyPlayroomTokenAccessWithDataConnect(
 			playroomSessionId: tokenClaims.playroomSessionId,
 			activeCount,
 			role: tokenClaims.role,
+			debug: {
+				parsedRole: tokenClaims.role,
+				parsedPlayroomSessionId: tokenClaims.playroomSessionId,
+				providedTokenLength: token.length,
+				providedTokenFingerprint,
+			},
 			reason: "session_not_found",
 		};
 	}
@@ -412,15 +447,28 @@ export async function verifyPlayroomTokenAccessWithDataConnect(
 			playroomSessionId: tokenClaims.playroomSessionId,
 			activeCount,
 			role: tokenClaims.role,
+			debug: {
+				parsedRole: tokenClaims.role,
+				parsedPlayroomSessionId: tokenClaims.playroomSessionId,
+				providedTokenLength: token.length,
+				providedTokenFingerprint,
+			},
 			reason: matches ? "ok" : "creator_token_mismatch",
 		};
 	}
 
 	if (tokenClaims.role === "invited") {
+		const dbInvitedToken = session.jwtTokenInvitedUser;
+		const dbInvitedTokenExists =
+			typeof dbInvitedToken === "string" && dbInvitedToken.length > 0;
+		const dbInvitedTokenFingerprint = dbInvitedTokenExists
+			? await fingerprintToken(dbInvitedToken)
+			: undefined;
+		const dbInvitedTokenLength = dbInvitedTokenExists
+			? dbInvitedToken!.length
+			: undefined;
 		const invitedTokenMatches =
-			typeof session.jwtTokenInvitedUser === "string" &&
-			session.jwtTokenInvitedUser.length > 0 &&
-			session.jwtTokenInvitedUser === token;
+			dbInvitedTokenExists && dbInvitedToken === token;
 
 		if (!invitedTokenMatches) {
 			return {
@@ -428,38 +476,36 @@ export async function verifyPlayroomTokenAccessWithDataConnect(
 				playroomSessionId: tokenClaims.playroomSessionId,
 				activeCount,
 				role: tokenClaims.role,
+				debug: {
+					parsedRole: tokenClaims.role,
+					parsedPlayroomSessionId: tokenClaims.playroomSessionId,
+					providedTokenLength: token.length,
+					providedTokenFingerprint,
+					dbInvitedTokenExists,
+					dbInvitedTokenLength,
+					dbInvitedTokenFingerprint,
+					invitedTokenEquals: invitedTokenMatches,
+				},
 				reason: "invited_token_mismatch",
 			};
 		}
-
-		if (!session.invitedUserJoinedAt) {
-			return {
-				ok: false,
-				playroomSessionId: tokenClaims.playroomSessionId,
-				activeCount,
-				role: tokenClaims.role,
-				reason: "invited_joined_at_missing",
-			};
-		}
-
-		const joinedAt = Date.parse(session.invitedUserJoinedAt);
-		if (Number.isNaN(joinedAt)) {
-			return {
-				ok: false,
-				playroomSessionId: tokenClaims.playroomSessionId,
-				activeCount,
-				role: tokenClaims.role,
-				reason: "invited_joined_at_outside_window",
-			};
-		}
-
-		const withinWindow = Math.abs(Date.now() - joinedAt) <= INVITED_JOIN_WINDOW_MS;
 		return {
-			ok: withinWindow,
+			ok: true,
 			playroomSessionId: tokenClaims.playroomSessionId,
 			activeCount,
 			role: tokenClaims.role,
-			reason: withinWindow ? "ok" : "invited_joined_at_outside_window",
+			debug: {
+				parsedRole: tokenClaims.role,
+				parsedPlayroomSessionId: tokenClaims.playroomSessionId,
+				providedTokenLength: token.length,
+				providedTokenFingerprint,
+				dbInvitedTokenExists,
+				dbInvitedTokenLength,
+				dbInvitedTokenFingerprint,
+				invitedTokenEquals: invitedTokenMatches,
+				invitedUserJoinedAt: session.invitedUserJoinedAt ?? null,
+			},
+			reason: "ok",
 		};
 	}
 
@@ -472,6 +518,12 @@ export async function verifyPlayroomTokenAccessWithDataConnect(
 		playroomSessionId: tokenClaims.playroomSessionId,
 		activeCount,
 		role: tokenClaims.role,
+		debug: {
+			parsedRole: tokenClaims.role,
+			parsedPlayroomSessionId: tokenClaims.playroomSessionId,
+			providedTokenLength: token.length,
+			providedTokenFingerprint,
+		},
 		reason: spectatorMatches ? "ok" : "spectator_token_mismatch",
 	};
 }

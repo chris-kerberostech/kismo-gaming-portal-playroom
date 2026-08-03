@@ -15,6 +15,7 @@ function readBootstrapOptions() {
 		room: url.searchParams.get("room") || "lobby",
 		chatOpen: url.searchParams.get("chat") === "1",
 		token: url.searchParams.get("token") || "",
+		spectatorId: url.searchParams.get("spectatorId") || "",
 	};
 }
 
@@ -25,9 +26,13 @@ type AccessGateState =
 	| { status: "ready" }
 	| { status: "denied"; reason: string };
 
-async function verifyBootstrapAccess(token: string): Promise<{
+async function verifyBootstrapAccess(
+	token: string,
+	spectatorId: string,
+): Promise<{
 	ok: boolean;
 	reason?: string;
+	debug?: unknown;
 }> {
 	if (!token) {
 		return {
@@ -36,7 +41,10 @@ async function verifyBootstrapAccess(token: string): Promise<{
 		};
 	}
 
-	const response = await fetch("/api/playroom/verify", {
+	const verifyUrl = new URL("/api/playroom/verify", window.location.origin);
+	verifyUrl.searchParams.set("spectatorId", spectatorId);
+
+	const response = await fetch(verifyUrl.toString(), {
 		method: "GET",
 		headers: {
 			Authorization: `Bearer ${token}`,
@@ -46,10 +54,14 @@ async function verifyBootstrapAccess(token: string): Promise<{
 
 	if (!response.ok) {
 		try {
-			const payload = (await response.json()) as { reason?: string };
+			const payload = (await response.json()) as {
+				reason?: string;
+				debug?: unknown;
+			};
 			return {
 				ok: false,
 				reason: payload.reason || "verification_failed",
+				debug: payload.debug,
 			};
 		} catch {
 			return {
@@ -59,10 +71,15 @@ async function verifyBootstrapAccess(token: string): Promise<{
 		}
 	}
 
-	const payload = (await response.json()) as { ok?: boolean; reason?: string };
+	const payload = (await response.json()) as {
+		ok?: boolean;
+		reason?: string;
+		debug?: unknown;
+	};
 	return {
 		ok: payload.ok === true,
 		reason: payload.reason,
+		debug: payload.debug,
 	};
 }
 
@@ -202,9 +219,20 @@ function PortalAppBootstrap() {
 	useEffect(() => {
 		let cancelled = false;
 
-		verifyBootstrapAccess(bootstrapOptions.token)
+		verifyBootstrapAccess(bootstrapOptions.token, bootstrapOptions.spectatorId)
 			.then((result) => {
 				if (cancelled) return;
+				if (
+					!result.ok &&
+					(window.location.hostname === "localhost" ||
+						window.location.hostname === "127.0.0.1")
+				) {
+					console.warn("[playroom verify debug]", {
+						reason: result.reason,
+						debug: result.debug,
+						url: window.location.href,
+					});
+				}
 				if (!result.ok) {
 					setAccessState({
 						status: "denied",

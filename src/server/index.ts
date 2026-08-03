@@ -18,7 +18,16 @@ type AuthEnv = Env & FirebaseEnv & {
 	AUTH_JWT_SECRET?: string;
 	AUTH_VERIFY_URL?: string;
 	AUTH_ALLOW_FALLBACK?: string;
+	NODE_ENV?: string;
+	ENVIRONMENT?: string;
 };
+
+function isDevRequest(env: AuthEnv, url: URL): boolean {
+	if (env.NODE_ENV === "development" || env.ENVIRONMENT === "development") {
+		return true;
+	}
+	return url.hostname === "localhost" || url.hostname === "127.0.0.1";
+}
 
 function toHex(bytes: Uint8Array): string {
 	return [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -359,10 +368,12 @@ export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
 		if (url.pathname === "/api/playroom/verify") {
+			const devMode = isDevRequest(env as AuthEnv, url);
 			const token =
 				url.searchParams.get("token") ||
 				request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ||
 				"";
+			const spectatorId = (url.searchParams.get("spectatorId") || "").trim();
 			if (!token) {
 				return jsonResponse(
 					{
@@ -378,12 +389,47 @@ export default {
 					token,
 					env as AuthEnv,
 				);
+				if (verification.role === "spectator" && spectatorId.length === 0) {
+					if (devMode) {
+						authLog("info", "verify_endpoint_debug", {
+							reason: "missing_spectator_id",
+							verification: {
+								role: verification.role,
+								playroomSessionId: verification.playroomSessionId,
+								debug: verification.debug,
+							},
+						});
+					}
+					return jsonResponse(
+						{
+							ok: false,
+							role: verification.role,
+							playroomSessionId: verification.playroomSessionId,
+							reason: "missing_spectator_id",
+							...(devMode ? { debug: verification.debug } : {}),
+						},
+						401,
+					);
+				}
+
+				if (devMode && !verification.ok) {
+					authLog("info", "verify_endpoint_debug", {
+						reason: verification.reason,
+						verification: {
+							role: verification.role,
+							playroomSessionId: verification.playroomSessionId,
+							debug: verification.debug,
+						},
+					});
+				}
+
 				return jsonResponse(
 					{
 						ok: verification.ok,
 						role: verification.role,
 						playroomSessionId: verification.playroomSessionId,
 						reason: verification.reason,
+						...(devMode ? { debug: verification.debug } : {}),
 					},
 					verification.ok ? 200 : 401,
 				);
