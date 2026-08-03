@@ -217,14 +217,63 @@ function getJwtClaims(payload: Record<string, unknown>): Record<string, unknown>
 	return claims as Record<string, unknown>;
 }
 
+function findNestedClaimValue(
+	value: unknown,
+	key: string,
+	depth = 0,
+): unknown {
+	if (!value || typeof value !== "object" || Array.isArray(value)) {
+		return null;
+	}
+
+	if (depth > 8) return null;
+
+	const record = value as Record<string, unknown>;
+	if (Object.hasOwn(record, key)) {
+		return record[key];
+	}
+
+	for (const nestedValue of Object.values(record)) {
+		const found = findNestedClaimValue(nestedValue, key, depth + 1);
+		if (found !== null && found !== undefined) {
+			return found;
+		}
+	}
+
+	return null;
+}
+
+function claimValueToString(value: unknown): string | null {
+	if (typeof value === "string") {
+		const trimmed = value.trim();
+		return trimmed || null;
+	}
+
+	if (!value || typeof value !== "object" || Array.isArray(value)) {
+		return null;
+	}
+
+	const record = value as Record<string, unknown>;
+	const nestedCandidates = [record.value, record.claim, record.raw, record.text];
+	for (const candidate of nestedCandidates) {
+		if (typeof candidate === "string") {
+			const trimmed = candidate.trim();
+			if (trimmed) return trimmed;
+		}
+	}
+
+	return null;
+}
+
 function resolveClaimString(
 	claims: Record<string, unknown>,
 	key: string,
 ): string | null {
-	const raw = claims[key];
-	if (typeof raw !== "string") return null;
-
-	const trimmed = raw.trim();
+	const raw =
+		Object.hasOwn(claims, key) && claims[key] !== undefined
+			? claims[key]
+			: findNestedClaimValue(claims, key);
+	const trimmed = claimValueToString(raw);
 	if (!trimmed) return null;
 
 	const lowerKey = key.toLowerCase();
