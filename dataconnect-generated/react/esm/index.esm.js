@@ -1,4 +1,4 @@
-import { createUserRef, createChatroomRef, joinChatroomRef, leaveChatroomRef, sendMessageRef, updateStatusRef, updateUserImageRef, upsertFriendWithRef, sendFriendWithRequestRef, acceptFriendWithRequestRef, acceptFriendWithRequestBidirectionalRef, rejectFriendWithRequestBidirectionalRef, deleteFriendWithRef, updateChatroomDetailsRef, upsertChatroomStatRef, updateCityNameRef, deleteChatroomStatRef, updateStatValueRef, upsertGlobalStatRef, openChatroomSessionRef, closeChatroomSessionRef, heartbeatChatroomSessionRef, recordChatroomVisitRef, trimOldVisitsRef, createNotificationRef, markNotificationReadRef, markAllNotificationsReadRef, initializeChatroomStatsDefaultsRef, incrementChatroomStatRef, createPlayroomSessionRef, updatePlayroomSessionDetailsRef, closePlayroomSessionRef, deletePlayroomSessionRef, getUserRef, listPublicChatroomsRef, getChatroomMessagesRef, listChatroomsByOwnerRef, listChatroomsByCityRef, searchCitiesRef, isMemberRef, getFriendWithRef, listFriendWithByUserRef, listPendingFriendRequestsReceivedRef, listAcceptedFriendConnectionsRef, listMyChatroomsRef, getGlobalStatsRef, getGlobalStatRef, listActiveSessionsByUserRef, listActiveSessionsGlobalRef, listRecentVisitedChatroomsRef, listNotificationsByRecipientRef, countUnreadNotificationsRef, listChatroomStatsByChatroomIdsRef, fetchPlayroomCreatorTokenRef, fetchPlayroomInvitedUserTokenRef, fetchPlayroomParticipantTokenRef, fetchPlayroomParticipantUserIdsRef, listActivePlayroomSessionsByUserAndGameRef, getPlayroomSessionByPlayroomSessionIdRef, getActivePlayroomSessionByPlayroomSessionIdRef, connectorConfig } from '../../esm/index.esm.js';
+import { createUserRef, createChatroomRef, joinChatroomRef, leaveChatroomRef, sendMessageRef, updateStatusRef, updateUserImageRef, upsertFriendWithRef, sendFriendWithRequestRef, acceptFriendWithRequestRef, acceptFriendWithRequestBidirectionalRef, rejectFriendWithRequestBidirectionalRef, deleteFriendWithRef, updateChatroomDetailsRef, upsertChatroomStatRef, updateCityNameRef, deleteChatroomStatRef, updateStatValueRef, upsertGlobalStatRef, openChatroomSessionRef, closeChatroomSessionRef, heartbeatChatroomSessionRef, recordChatroomVisitRef, trimOldVisitsRef, createNotificationRef, markNotificationReadRef, markAllNotificationsReadRef, initializeChatroomStatsDefaultsRef, incrementChatroomStatRef, createPlayroomSessionRef, updatePlayroomSessionDetailsRef, updatePlayroomInvitedUserJoinedAtRef, deletePlayroomInvitedUserJoinedAtRef, updatePlayroomCreatorUserHeartbeatRef, deletePlayroomCreatorUserHeartbeatRef, updatePlayroomInvitedUserHeartbeatRef, deletePlayroomInvitedUserHeartbeatRef, closePlayroomSessionRef, deletePlayroomSessionRef, getUserRef, listPublicChatroomsRef, getChatroomMessagesRef, listChatroomsByOwnerRef, listChatroomsByCityRef, searchCitiesRef, isMemberRef, getFriendWithRef, listFriendWithByUserRef, listPendingFriendRequestsReceivedRef, listAcceptedFriendConnectionsRef, listMyChatroomsRef, getGlobalStatsRef, getGlobalStatRef, listActiveSessionsByUserRef, listActiveSessionsGlobalRef, listRecentVisitedChatroomsRef, listNotificationsByRecipientRef, countUnreadNotificationsRef, listChatroomStatsByChatroomIdsRef, fetchPlayroomCreatorTokenRef, fetchPlayroomInvitedUserTokenRef, fetchPlayroomParticipantTokenRef, fetchPlayroomParticipantUserIdsRef, fetchPlayroomInvitedUserJoinedAtRef, fetchPlayroomCreatorUserHeartbeatRef, fetchPlayroomInvitedUserHeartbeatRef, listActivePlayroomSessionsByUserAndGameRef, getPlayroomSessionByPlayroomSessionIdRef, getActivePlayroomSessionByPlayroomSessionIdRef, connectorConfig } from '../../esm/index.esm.js';
 import { validateArgs, CallerSdkTypeEnum } from 'firebase/data-connect';
 import { useDataConnectQuery, useDataConnectMutation, validateReactArgs } from '@tanstack-query-firebase/react/data-connect';
 
@@ -250,6 +250,54 @@ export function useUpdatePlayroomSessionDetails(dcOrOptions, options) {
   return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 
+export function useUpdatePlayroomInvitedUserJoinedAt(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return updatePlayroomInvitedUserJoinedAtRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useDeletePlayroomInvitedUserJoinedAt(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return deletePlayroomInvitedUserJoinedAtRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useUpdatePlayroomCreatorUserHeartbeat(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return updatePlayroomCreatorUserHeartbeatRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useDeletePlayroomCreatorUserHeartbeat(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return deletePlayroomCreatorUserHeartbeatRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useUpdatePlayroomInvitedUserHeartbeat(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return updatePlayroomInvitedUserHeartbeatRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useDeletePlayroomInvitedUserHeartbeat(dcOrOptions, options) {
+  const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
+  function refFactory(vars) {
+    return deletePlayroomInvitedUserHeartbeatRef(dcInstance, vars);
+  }
+  return useDataConnectMutation(refFactory, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
 export function useClosePlayroomSession(dcOrOptions, options) {
   const { dc: dcInstance, vars: inputOpts } = validateArgs(connectorConfig, dcOrOptions, options);
   function refFactory(vars) {
@@ -408,6 +456,24 @@ export function useFetchPlayroomParticipantToken(dcOrVars, varsOrOptions, option
 export function useFetchPlayroomParticipantUserIds(dcOrVars, varsOrOptions, options) {
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   const ref = fetchPlayroomParticipantUserIdsRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useFetchPlayroomInvitedUserJoinedAt(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const ref = fetchPlayroomInvitedUserJoinedAtRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useFetchPlayroomCreatorUserHeartbeat(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const ref = fetchPlayroomCreatorUserHeartbeatRef(dcInstance, inputVars);
+  return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
+}
+
+export function useFetchPlayroomInvitedUserHeartbeat(dcOrVars, varsOrOptions, options) {
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateReactArgs(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  const ref = fetchPlayroomInvitedUserHeartbeatRef(dcInstance, inputVars);
   return useDataConnectQuery(ref, inputOpts, CallerSdkTypeEnum.GeneratedReact);
 }
 

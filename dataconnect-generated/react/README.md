@@ -41,6 +41,9 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*FetchPlayroomInvitedUserToken*](#fetchplayroominvitedusertoken)
   - [*FetchPlayroomParticipantToken*](#fetchplayroomparticipanttoken)
   - [*FetchPlayroomParticipantUserIds*](#fetchplayroomparticipantuserids)
+  - [*FetchPlayroomInvitedUserJoinedAt*](#fetchplayroominviteduserjoinedat)
+  - [*FetchPlayroomCreatorUserHeartbeat*](#fetchplayroomcreatoruserheartbeat)
+  - [*FetchPlayroomInvitedUserHeartbeat*](#fetchplayroominviteduserheartbeat)
   - [*ListActivePlayroomSessionsByUserAndGame*](#listactiveplayroomsessionsbyuserandgame)
   - [*GetPlayroomSessionByPlayroomSessionId*](#getplayroomsessionbyplayroomsessionid)
   - [*GetActivePlayroomSessionByPlayroomSessionId*](#getactiveplayroomsessionbyplayroomsessionid)
@@ -76,6 +79,12 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*IncrementChatroomStat*](#incrementchatroomstat)
   - [*CreatePlayroomSession*](#createplayroomsession)
   - [*UpdatePlayroomSessionDetails*](#updateplayroomsessiondetails)
+  - [*UpdatePlayroomInvitedUserJoinedAt*](#updateplayroominviteduserjoinedat)
+  - [*DeletePlayroomInvitedUserJoinedAt*](#deleteplayroominviteduserjoinedat)
+  - [*UpdatePlayroomCreatorUserHeartbeat*](#updateplayroomcreatoruserheartbeat)
+  - [*DeletePlayroomCreatorUserHeartbeat*](#deleteplayroomcreatoruserheartbeat)
+  - [*UpdatePlayroomInvitedUserHeartbeat*](#updateplayroominviteduserheartbeat)
+  - [*DeletePlayroomInvitedUserHeartbeat*](#deleteplayroominviteduserheartbeat)
   - [*ClosePlayroomSession*](#closeplayroomsession)
   - [*DeletePlayroomSession*](#deleteplayroomsession)
 
@@ -2367,6 +2376,258 @@ export default function FetchPlayroomParticipantUserIdsComponent() {
 }
 ```
 
+## FetchPlayroomInvitedUserJoinedAt
+You can execute the `FetchPlayroomInvitedUserJoinedAt` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useFetchPlayroomInvitedUserJoinedAt(dc: DataConnect, vars: FetchPlayroomInvitedUserJoinedAtVariables, options?: useDataConnectQueryOptions<FetchPlayroomInvitedUserJoinedAtData>): UseDataConnectQueryResult<FetchPlayroomInvitedUserJoinedAtData, FetchPlayroomInvitedUserJoinedAtVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useFetchPlayroomInvitedUserJoinedAt(vars: FetchPlayroomInvitedUserJoinedAtVariables, options?: useDataConnectQueryOptions<FetchPlayroomInvitedUserJoinedAtData>): UseDataConnectQueryResult<FetchPlayroomInvitedUserJoinedAtData, FetchPlayroomInvitedUserJoinedAtVariables>;
+```
+
+### Variables
+The `FetchPlayroomInvitedUserJoinedAt` Query requires an argument of type `FetchPlayroomInvitedUserJoinedAtVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface FetchPlayroomInvitedUserJoinedAtVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `FetchPlayroomInvitedUserJoinedAt` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `FetchPlayroomInvitedUserJoinedAt` Query is of type `FetchPlayroomInvitedUserJoinedAtData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface FetchPlayroomInvitedUserJoinedAtData {
+  playroomSession?: {
+    invitedUserJoinedAt?: TimestampString | null;
+  };
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `FetchPlayroomInvitedUserJoinedAt`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, FetchPlayroomInvitedUserJoinedAtVariables } from '@kismoportal-dataconnect/generated';
+import { useFetchPlayroomInvitedUserJoinedAt } from '@kismoportal-dataconnect/generated/react'
+
+export default function FetchPlayroomInvitedUserJoinedAtComponent() {
+  // The `useFetchPlayroomInvitedUserJoinedAt` Query hook requires an argument of type `FetchPlayroomInvitedUserJoinedAtVariables`:
+  const fetchPlayroomInvitedUserJoinedAtVars: FetchPlayroomInvitedUserJoinedAtVariables = {
+    id: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useFetchPlayroomInvitedUserJoinedAt(fetchPlayroomInvitedUserJoinedAtVars);
+  // Variables can be defined inline as well.
+  const query = useFetchPlayroomInvitedUserJoinedAt({ id: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useFetchPlayroomInvitedUserJoinedAt(dataConnect, fetchPlayroomInvitedUserJoinedAtVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useFetchPlayroomInvitedUserJoinedAt(fetchPlayroomInvitedUserJoinedAtVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useFetchPlayroomInvitedUserJoinedAt(dataConnect, fetchPlayroomInvitedUserJoinedAtVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.playroomSession);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## FetchPlayroomCreatorUserHeartbeat
+You can execute the `FetchPlayroomCreatorUserHeartbeat` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useFetchPlayroomCreatorUserHeartbeat(dc: DataConnect, vars: FetchPlayroomCreatorUserHeartbeatVariables, options?: useDataConnectQueryOptions<FetchPlayroomCreatorUserHeartbeatData>): UseDataConnectQueryResult<FetchPlayroomCreatorUserHeartbeatData, FetchPlayroomCreatorUserHeartbeatVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useFetchPlayroomCreatorUserHeartbeat(vars: FetchPlayroomCreatorUserHeartbeatVariables, options?: useDataConnectQueryOptions<FetchPlayroomCreatorUserHeartbeatData>): UseDataConnectQueryResult<FetchPlayroomCreatorUserHeartbeatData, FetchPlayroomCreatorUserHeartbeatVariables>;
+```
+
+### Variables
+The `FetchPlayroomCreatorUserHeartbeat` Query requires an argument of type `FetchPlayroomCreatorUserHeartbeatVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface FetchPlayroomCreatorUserHeartbeatVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `FetchPlayroomCreatorUserHeartbeat` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `FetchPlayroomCreatorUserHeartbeat` Query is of type `FetchPlayroomCreatorUserHeartbeatData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface FetchPlayroomCreatorUserHeartbeatData {
+  playroomSession?: {
+    creatorUserHeartbeat?: TimestampString | null;
+  };
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `FetchPlayroomCreatorUserHeartbeat`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, FetchPlayroomCreatorUserHeartbeatVariables } from '@kismoportal-dataconnect/generated';
+import { useFetchPlayroomCreatorUserHeartbeat } from '@kismoportal-dataconnect/generated/react'
+
+export default function FetchPlayroomCreatorUserHeartbeatComponent() {
+  // The `useFetchPlayroomCreatorUserHeartbeat` Query hook requires an argument of type `FetchPlayroomCreatorUserHeartbeatVariables`:
+  const fetchPlayroomCreatorUserHeartbeatVars: FetchPlayroomCreatorUserHeartbeatVariables = {
+    id: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useFetchPlayroomCreatorUserHeartbeat(fetchPlayroomCreatorUserHeartbeatVars);
+  // Variables can be defined inline as well.
+  const query = useFetchPlayroomCreatorUserHeartbeat({ id: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useFetchPlayroomCreatorUserHeartbeat(dataConnect, fetchPlayroomCreatorUserHeartbeatVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useFetchPlayroomCreatorUserHeartbeat(fetchPlayroomCreatorUserHeartbeatVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useFetchPlayroomCreatorUserHeartbeat(dataConnect, fetchPlayroomCreatorUserHeartbeatVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.playroomSession);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## FetchPlayroomInvitedUserHeartbeat
+You can execute the `FetchPlayroomInvitedUserHeartbeat` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
+
+```javascript
+useFetchPlayroomInvitedUserHeartbeat(dc: DataConnect, vars: FetchPlayroomInvitedUserHeartbeatVariables, options?: useDataConnectQueryOptions<FetchPlayroomInvitedUserHeartbeatData>): UseDataConnectQueryResult<FetchPlayroomInvitedUserHeartbeatData, FetchPlayroomInvitedUserHeartbeatVariables>;
+```
+You can also pass in a `DataConnect` instance to the Query hook function.
+```javascript
+useFetchPlayroomInvitedUserHeartbeat(vars: FetchPlayroomInvitedUserHeartbeatVariables, options?: useDataConnectQueryOptions<FetchPlayroomInvitedUserHeartbeatData>): UseDataConnectQueryResult<FetchPlayroomInvitedUserHeartbeatData, FetchPlayroomInvitedUserHeartbeatVariables>;
+```
+
+### Variables
+The `FetchPlayroomInvitedUserHeartbeat` Query requires an argument of type `FetchPlayroomInvitedUserHeartbeatVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface FetchPlayroomInvitedUserHeartbeatVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `FetchPlayroomInvitedUserHeartbeat` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
+
+To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
+
+To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `FetchPlayroomInvitedUserHeartbeat` Query is of type `FetchPlayroomInvitedUserHeartbeatData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface FetchPlayroomInvitedUserHeartbeatData {
+  playroomSession?: {
+    invitedUserHeartbeat?: TimestampString | null;
+  };
+}
+```
+
+To learn more about the `UseQueryResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useQuery).
+
+### Using `FetchPlayroomInvitedUserHeartbeat`'s Query hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, FetchPlayroomInvitedUserHeartbeatVariables } from '@kismoportal-dataconnect/generated';
+import { useFetchPlayroomInvitedUserHeartbeat } from '@kismoportal-dataconnect/generated/react'
+
+export default function FetchPlayroomInvitedUserHeartbeatComponent() {
+  // The `useFetchPlayroomInvitedUserHeartbeat` Query hook requires an argument of type `FetchPlayroomInvitedUserHeartbeatVariables`:
+  const fetchPlayroomInvitedUserHeartbeatVars: FetchPlayroomInvitedUserHeartbeatVariables = {
+    id: ..., 
+  };
+
+  // You don't have to do anything to "execute" the Query.
+  // Call the Query hook function to get a `UseQueryResult` object which holds the state of your Query.
+  const query = useFetchPlayroomInvitedUserHeartbeat(fetchPlayroomInvitedUserHeartbeatVars);
+  // Variables can be defined inline as well.
+  const query = useFetchPlayroomInvitedUserHeartbeat({ id: ..., });
+
+  // You can also pass in a `DataConnect` instance to the Query hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const query = useFetchPlayroomInvitedUserHeartbeat(dataConnect, fetchPlayroomInvitedUserHeartbeatVars);
+
+  // You can also pass in a `useDataConnectQueryOptions` object to the Query hook function.
+  const options = { staleTime: 5 * 1000 };
+  const query = useFetchPlayroomInvitedUserHeartbeat(fetchPlayroomInvitedUserHeartbeatVars, options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectQueryOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = { staleTime: 5 * 1000 };
+  const query = useFetchPlayroomInvitedUserHeartbeat(dataConnect, fetchPlayroomInvitedUserHeartbeatVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Query.
+  if (query.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (query.isError) {
+    return <div>Error: {query.error.message}</div>;
+  }
+
+  // If the Query is successful, you can access the data returned using the `UseQueryResult.data` field.
+  if (query.isSuccess) {
+    console.log(query.data.playroomSession);
+  }
+  return <div>Query execution {query.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
 ## ListActivePlayroomSessionsByUserAndGame
 You can execute the `ListActivePlayroomSessionsByUserAndGame` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
@@ -2400,7 +2661,10 @@ export interface ListActivePlayroomSessionsByUserAndGameData {
     gameName: string;
     openedByUserId: UUIDString;
     invitedUserId?: UUIDString | null;
+    invitedUserJoinedAt?: TimestampString | null;
     openedAt: TimestampString;
+    creatorUserHeartbeat?: TimestampString | null;
+    invitedUserHeartbeat?: TimestampString | null;
     closedAt?: TimestampString | null;
   } & PlayroomSession_Key)[];
 }
@@ -2491,7 +2755,10 @@ export interface GetPlayroomSessionByPlayroomSessionIdData {
     gameName: string;
     openedByUserId: UUIDString;
     invitedUserId?: UUIDString | null;
+    invitedUserJoinedAt?: TimestampString | null;
     openedAt: TimestampString;
+    creatorUserHeartbeat?: TimestampString | null;
+    invitedUserHeartbeat?: TimestampString | null;
     closedAt?: TimestampString | null;
     jwtTokenCreator: string;
     jwtTokenInvitedUser?: string | null;
@@ -2584,7 +2851,10 @@ export interface GetActivePlayroomSessionByPlayroomSessionIdData {
     gameName: string;
     openedByUserId: UUIDString;
     invitedUserId?: UUIDString | null;
+    invitedUserJoinedAt?: TimestampString | null;
     openedAt: TimestampString;
+    creatorUserHeartbeat?: TimestampString | null;
+    invitedUserHeartbeat?: TimestampString | null;
     closedAt?: TimestampString | null;
     jwtTokenCreator: string;
     jwtTokenInvitedUser?: string | null;
@@ -5636,6 +5906,7 @@ The `UpdatePlayroomSessionDetails` Mutation requires an argument of type `Update
 export interface UpdatePlayroomSessionDetailsVariables {
   id: UUIDString;
   invitedUserId?: UUIDString | null;
+  invitedUserJoinedAt?: TimestampString | null;
   jwtTokenInvitedUser?: string | null;
   jwtTokenSpectator?: string | null;
 }
@@ -5689,18 +5960,589 @@ export default function UpdatePlayroomSessionDetailsComponent() {
   const updatePlayroomSessionDetailsVars: UpdatePlayroomSessionDetailsVariables = {
     id: ..., 
     invitedUserId: ..., // optional
+    invitedUserJoinedAt: ..., // optional
     jwtTokenInvitedUser: ..., // optional
     jwtTokenSpectator: ..., // optional
   };
   mutation.mutate(updatePlayroomSessionDetailsVars);
   // Variables can be defined inline as well.
-  mutation.mutate({ id: ..., invitedUserId: ..., jwtTokenInvitedUser: ..., jwtTokenSpectator: ..., });
+  mutation.mutate({ id: ..., invitedUserId: ..., invitedUserJoinedAt: ..., jwtTokenInvitedUser: ..., jwtTokenSpectator: ..., });
 
   // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
   const options = {
     onSuccess: () => { console.log('Mutation succeeded!'); }
   };
   mutation.mutate(updatePlayroomSessionDetailsVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.playroomSession_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpdatePlayroomInvitedUserJoinedAt
+You can execute the `UpdatePlayroomInvitedUserJoinedAt` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpdatePlayroomInvitedUserJoinedAt(options?: useDataConnectMutationOptions<UpdatePlayroomInvitedUserJoinedAtData, FirebaseError, UpdatePlayroomInvitedUserJoinedAtVariables>): UseDataConnectMutationResult<UpdatePlayroomInvitedUserJoinedAtData, UpdatePlayroomInvitedUserJoinedAtVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpdatePlayroomInvitedUserJoinedAt(dc: DataConnect, options?: useDataConnectMutationOptions<UpdatePlayroomInvitedUserJoinedAtData, FirebaseError, UpdatePlayroomInvitedUserJoinedAtVariables>): UseDataConnectMutationResult<UpdatePlayroomInvitedUserJoinedAtData, UpdatePlayroomInvitedUserJoinedAtVariables>;
+```
+
+### Variables
+The `UpdatePlayroomInvitedUserJoinedAt` Mutation requires an argument of type `UpdatePlayroomInvitedUserJoinedAtVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpdatePlayroomInvitedUserJoinedAtVariables {
+  id: UUIDString;
+  invitedUserJoinedAt: TimestampString;
+}
+```
+### Return Type
+Recall that calling the `UpdatePlayroomInvitedUserJoinedAt` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdatePlayroomInvitedUserJoinedAt` Mutation is of type `UpdatePlayroomInvitedUserJoinedAtData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpdatePlayroomInvitedUserJoinedAtData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpdatePlayroomInvitedUserJoinedAt`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpdatePlayroomInvitedUserJoinedAtVariables } from '@kismoportal-dataconnect/generated';
+import { useUpdatePlayroomInvitedUserJoinedAt } from '@kismoportal-dataconnect/generated/react'
+
+export default function UpdatePlayroomInvitedUserJoinedAtComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpdatePlayroomInvitedUserJoinedAt();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpdatePlayroomInvitedUserJoinedAt(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdatePlayroomInvitedUserJoinedAt(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdatePlayroomInvitedUserJoinedAt(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpdatePlayroomInvitedUserJoinedAt` Mutation requires an argument of type `UpdatePlayroomInvitedUserJoinedAtVariables`:
+  const updatePlayroomInvitedUserJoinedAtVars: UpdatePlayroomInvitedUserJoinedAtVariables = {
+    id: ..., 
+    invitedUserJoinedAt: ..., 
+  };
+  mutation.mutate(updatePlayroomInvitedUserJoinedAtVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., invitedUserJoinedAt: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(updatePlayroomInvitedUserJoinedAtVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.playroomSession_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeletePlayroomInvitedUserJoinedAt
+You can execute the `DeletePlayroomInvitedUserJoinedAt` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeletePlayroomInvitedUserJoinedAt(options?: useDataConnectMutationOptions<DeletePlayroomInvitedUserJoinedAtData, FirebaseError, DeletePlayroomInvitedUserJoinedAtVariables>): UseDataConnectMutationResult<DeletePlayroomInvitedUserJoinedAtData, DeletePlayroomInvitedUserJoinedAtVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeletePlayroomInvitedUserJoinedAt(dc: DataConnect, options?: useDataConnectMutationOptions<DeletePlayroomInvitedUserJoinedAtData, FirebaseError, DeletePlayroomInvitedUserJoinedAtVariables>): UseDataConnectMutationResult<DeletePlayroomInvitedUserJoinedAtData, DeletePlayroomInvitedUserJoinedAtVariables>;
+```
+
+### Variables
+The `DeletePlayroomInvitedUserJoinedAt` Mutation requires an argument of type `DeletePlayroomInvitedUserJoinedAtVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeletePlayroomInvitedUserJoinedAtVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `DeletePlayroomInvitedUserJoinedAt` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeletePlayroomInvitedUserJoinedAt` Mutation is of type `DeletePlayroomInvitedUserJoinedAtData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeletePlayroomInvitedUserJoinedAtData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeletePlayroomInvitedUserJoinedAt`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeletePlayroomInvitedUserJoinedAtVariables } from '@kismoportal-dataconnect/generated';
+import { useDeletePlayroomInvitedUserJoinedAt } from '@kismoportal-dataconnect/generated/react'
+
+export default function DeletePlayroomInvitedUserJoinedAtComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeletePlayroomInvitedUserJoinedAt();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeletePlayroomInvitedUserJoinedAt(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeletePlayroomInvitedUserJoinedAt(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeletePlayroomInvitedUserJoinedAt(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeletePlayroomInvitedUserJoinedAt` Mutation requires an argument of type `DeletePlayroomInvitedUserJoinedAtVariables`:
+  const deletePlayroomInvitedUserJoinedAtVars: DeletePlayroomInvitedUserJoinedAtVariables = {
+    id: ..., 
+  };
+  mutation.mutate(deletePlayroomInvitedUserJoinedAtVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deletePlayroomInvitedUserJoinedAtVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.playroomSession_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpdatePlayroomCreatorUserHeartbeat
+You can execute the `UpdatePlayroomCreatorUserHeartbeat` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpdatePlayroomCreatorUserHeartbeat(options?: useDataConnectMutationOptions<UpdatePlayroomCreatorUserHeartbeatData, FirebaseError, UpdatePlayroomCreatorUserHeartbeatVariables>): UseDataConnectMutationResult<UpdatePlayroomCreatorUserHeartbeatData, UpdatePlayroomCreatorUserHeartbeatVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpdatePlayroomCreatorUserHeartbeat(dc: DataConnect, options?: useDataConnectMutationOptions<UpdatePlayroomCreatorUserHeartbeatData, FirebaseError, UpdatePlayroomCreatorUserHeartbeatVariables>): UseDataConnectMutationResult<UpdatePlayroomCreatorUserHeartbeatData, UpdatePlayroomCreatorUserHeartbeatVariables>;
+```
+
+### Variables
+The `UpdatePlayroomCreatorUserHeartbeat` Mutation requires an argument of type `UpdatePlayroomCreatorUserHeartbeatVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpdatePlayroomCreatorUserHeartbeatVariables {
+  id: UUIDString;
+  creatorUserHeartbeat: TimestampString;
+}
+```
+### Return Type
+Recall that calling the `UpdatePlayroomCreatorUserHeartbeat` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdatePlayroomCreatorUserHeartbeat` Mutation is of type `UpdatePlayroomCreatorUserHeartbeatData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpdatePlayroomCreatorUserHeartbeatData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpdatePlayroomCreatorUserHeartbeat`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpdatePlayroomCreatorUserHeartbeatVariables } from '@kismoportal-dataconnect/generated';
+import { useUpdatePlayroomCreatorUserHeartbeat } from '@kismoportal-dataconnect/generated/react'
+
+export default function UpdatePlayroomCreatorUserHeartbeatComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpdatePlayroomCreatorUserHeartbeat();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpdatePlayroomCreatorUserHeartbeat(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdatePlayroomCreatorUserHeartbeat(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdatePlayroomCreatorUserHeartbeat(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpdatePlayroomCreatorUserHeartbeat` Mutation requires an argument of type `UpdatePlayroomCreatorUserHeartbeatVariables`:
+  const updatePlayroomCreatorUserHeartbeatVars: UpdatePlayroomCreatorUserHeartbeatVariables = {
+    id: ..., 
+    creatorUserHeartbeat: ..., 
+  };
+  mutation.mutate(updatePlayroomCreatorUserHeartbeatVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., creatorUserHeartbeat: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(updatePlayroomCreatorUserHeartbeatVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.playroomSession_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeletePlayroomCreatorUserHeartbeat
+You can execute the `DeletePlayroomCreatorUserHeartbeat` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeletePlayroomCreatorUserHeartbeat(options?: useDataConnectMutationOptions<DeletePlayroomCreatorUserHeartbeatData, FirebaseError, DeletePlayroomCreatorUserHeartbeatVariables>): UseDataConnectMutationResult<DeletePlayroomCreatorUserHeartbeatData, DeletePlayroomCreatorUserHeartbeatVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeletePlayroomCreatorUserHeartbeat(dc: DataConnect, options?: useDataConnectMutationOptions<DeletePlayroomCreatorUserHeartbeatData, FirebaseError, DeletePlayroomCreatorUserHeartbeatVariables>): UseDataConnectMutationResult<DeletePlayroomCreatorUserHeartbeatData, DeletePlayroomCreatorUserHeartbeatVariables>;
+```
+
+### Variables
+The `DeletePlayroomCreatorUserHeartbeat` Mutation requires an argument of type `DeletePlayroomCreatorUserHeartbeatVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeletePlayroomCreatorUserHeartbeatVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `DeletePlayroomCreatorUserHeartbeat` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeletePlayroomCreatorUserHeartbeat` Mutation is of type `DeletePlayroomCreatorUserHeartbeatData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeletePlayroomCreatorUserHeartbeatData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeletePlayroomCreatorUserHeartbeat`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeletePlayroomCreatorUserHeartbeatVariables } from '@kismoportal-dataconnect/generated';
+import { useDeletePlayroomCreatorUserHeartbeat } from '@kismoportal-dataconnect/generated/react'
+
+export default function DeletePlayroomCreatorUserHeartbeatComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeletePlayroomCreatorUserHeartbeat();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeletePlayroomCreatorUserHeartbeat(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeletePlayroomCreatorUserHeartbeat(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeletePlayroomCreatorUserHeartbeat(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeletePlayroomCreatorUserHeartbeat` Mutation requires an argument of type `DeletePlayroomCreatorUserHeartbeatVariables`:
+  const deletePlayroomCreatorUserHeartbeatVars: DeletePlayroomCreatorUserHeartbeatVariables = {
+    id: ..., 
+  };
+  mutation.mutate(deletePlayroomCreatorUserHeartbeatVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deletePlayroomCreatorUserHeartbeatVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.playroomSession_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## UpdatePlayroomInvitedUserHeartbeat
+You can execute the `UpdatePlayroomInvitedUserHeartbeat` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useUpdatePlayroomInvitedUserHeartbeat(options?: useDataConnectMutationOptions<UpdatePlayroomInvitedUserHeartbeatData, FirebaseError, UpdatePlayroomInvitedUserHeartbeatVariables>): UseDataConnectMutationResult<UpdatePlayroomInvitedUserHeartbeatData, UpdatePlayroomInvitedUserHeartbeatVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useUpdatePlayroomInvitedUserHeartbeat(dc: DataConnect, options?: useDataConnectMutationOptions<UpdatePlayroomInvitedUserHeartbeatData, FirebaseError, UpdatePlayroomInvitedUserHeartbeatVariables>): UseDataConnectMutationResult<UpdatePlayroomInvitedUserHeartbeatData, UpdatePlayroomInvitedUserHeartbeatVariables>;
+```
+
+### Variables
+The `UpdatePlayroomInvitedUserHeartbeat` Mutation requires an argument of type `UpdatePlayroomInvitedUserHeartbeatVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface UpdatePlayroomInvitedUserHeartbeatVariables {
+  id: UUIDString;
+  invitedUserHeartbeat: TimestampString;
+}
+```
+### Return Type
+Recall that calling the `UpdatePlayroomInvitedUserHeartbeat` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdatePlayroomInvitedUserHeartbeat` Mutation is of type `UpdatePlayroomInvitedUserHeartbeatData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface UpdatePlayroomInvitedUserHeartbeatData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `UpdatePlayroomInvitedUserHeartbeat`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, UpdatePlayroomInvitedUserHeartbeatVariables } from '@kismoportal-dataconnect/generated';
+import { useUpdatePlayroomInvitedUserHeartbeat } from '@kismoportal-dataconnect/generated/react'
+
+export default function UpdatePlayroomInvitedUserHeartbeatComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useUpdatePlayroomInvitedUserHeartbeat();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useUpdatePlayroomInvitedUserHeartbeat(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdatePlayroomInvitedUserHeartbeat(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useUpdatePlayroomInvitedUserHeartbeat(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useUpdatePlayroomInvitedUserHeartbeat` Mutation requires an argument of type `UpdatePlayroomInvitedUserHeartbeatVariables`:
+  const updatePlayroomInvitedUserHeartbeatVars: UpdatePlayroomInvitedUserHeartbeatVariables = {
+    id: ..., 
+    invitedUserHeartbeat: ..., 
+  };
+  mutation.mutate(updatePlayroomInvitedUserHeartbeatVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., invitedUserHeartbeat: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(updatePlayroomInvitedUserHeartbeatVars, options);
+
+  // Then, you can render your component dynamically based on the status of the Mutation.
+  if (mutation.isPending) {
+    return <div>Loading...</div>;
+  }
+
+  if (mutation.isError) {
+    return <div>Error: {mutation.error.message}</div>;
+  }
+
+  // If the Mutation is successful, you can access the data returned using the `UseMutationResult.data` field.
+  if (mutation.isSuccess) {
+    console.log(mutation.data.playroomSession_update);
+  }
+  return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
+}
+```
+
+## DeletePlayroomInvitedUserHeartbeat
+You can execute the `DeletePlayroomInvitedUserHeartbeat` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
+```javascript
+useDeletePlayroomInvitedUserHeartbeat(options?: useDataConnectMutationOptions<DeletePlayroomInvitedUserHeartbeatData, FirebaseError, DeletePlayroomInvitedUserHeartbeatVariables>): UseDataConnectMutationResult<DeletePlayroomInvitedUserHeartbeatData, DeletePlayroomInvitedUserHeartbeatVariables>;
+```
+You can also pass in a `DataConnect` instance to the Mutation hook function.
+```javascript
+useDeletePlayroomInvitedUserHeartbeat(dc: DataConnect, options?: useDataConnectMutationOptions<DeletePlayroomInvitedUserHeartbeatData, FirebaseError, DeletePlayroomInvitedUserHeartbeatVariables>): UseDataConnectMutationResult<DeletePlayroomInvitedUserHeartbeatData, DeletePlayroomInvitedUserHeartbeatVariables>;
+```
+
+### Variables
+The `DeletePlayroomInvitedUserHeartbeat` Mutation requires an argument of type `DeletePlayroomInvitedUserHeartbeatVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+
+```javascript
+export interface DeletePlayroomInvitedUserHeartbeatVariables {
+  id: UUIDString;
+}
+```
+### Return Type
+Recall that calling the `DeletePlayroomInvitedUserHeartbeat` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
+
+To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
+
+To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
+
+To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `DeletePlayroomInvitedUserHeartbeat` Mutation is of type `DeletePlayroomInvitedUserHeartbeatData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
+```javascript
+export interface DeletePlayroomInvitedUserHeartbeatData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+```
+
+To learn more about the `UseMutationResult` object, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/reference/useMutation).
+
+### Using `DeletePlayroomInvitedUserHeartbeat`'s Mutation hook function
+
+```javascript
+import { getDataConnect } from 'firebase/data-connect';
+import { connectorConfig, DeletePlayroomInvitedUserHeartbeatVariables } from '@kismoportal-dataconnect/generated';
+import { useDeletePlayroomInvitedUserHeartbeat } from '@kismoportal-dataconnect/generated/react'
+
+export default function DeletePlayroomInvitedUserHeartbeatComponent() {
+  // Call the Mutation hook function to get a `UseMutationResult` object which holds the state of your Mutation.
+  const mutation = useDeletePlayroomInvitedUserHeartbeat();
+
+  // You can also pass in a `DataConnect` instance to the Mutation hook function.
+  const dataConnect = getDataConnect(connectorConfig);
+  const mutation = useDeletePlayroomInvitedUserHeartbeat(dataConnect);
+
+  // You can also pass in a `useDataConnectMutationOptions` object to the Mutation hook function.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeletePlayroomInvitedUserHeartbeat(options);
+
+  // You can also pass both a `DataConnect` instance and a `useDataConnectMutationOptions` object.
+  const dataConnect = getDataConnect(connectorConfig);
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  const mutation = useDeletePlayroomInvitedUserHeartbeat(dataConnect, options);
+
+  // After calling the Mutation hook function, you must call `UseMutationResult.mutate()` to execute the Mutation.
+  // The `useDeletePlayroomInvitedUserHeartbeat` Mutation requires an argument of type `DeletePlayroomInvitedUserHeartbeatVariables`:
+  const deletePlayroomInvitedUserHeartbeatVars: DeletePlayroomInvitedUserHeartbeatVariables = {
+    id: ..., 
+  };
+  mutation.mutate(deletePlayroomInvitedUserHeartbeatVars);
+  // Variables can be defined inline as well.
+  mutation.mutate({ id: ..., });
+
+  // You can also pass in a `useDataConnectMutationOptions` object to `UseMutationResult.mutate()`.
+  const options = {
+    onSuccess: () => { console.log('Mutation succeeded!'); }
+  };
+  mutation.mutate(deletePlayroomInvitedUserHeartbeatVars, options);
 
   // Then, you can render your component dynamically based on the status of the Mutation.
   if (mutation.isPending) {

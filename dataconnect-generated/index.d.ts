@@ -159,6 +159,30 @@ export interface DeleteFriendWithVariables {
   friendWithUserId: UUIDString;
 }
 
+export interface DeletePlayroomCreatorUserHeartbeatData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+
+export interface DeletePlayroomCreatorUserHeartbeatVariables {
+  id: UUIDString;
+}
+
+export interface DeletePlayroomInvitedUserHeartbeatData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+
+export interface DeletePlayroomInvitedUserHeartbeatVariables {
+  id: UUIDString;
+}
+
+export interface DeletePlayroomInvitedUserJoinedAtData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+
+export interface DeletePlayroomInvitedUserJoinedAtVariables {
+  id: UUIDString;
+}
+
 export interface DeletePlayroomSessionData {
   playroomSession_delete?: PlayroomSession_Key | null;
 }
@@ -174,6 +198,36 @@ export interface FetchPlayroomCreatorTokenData {
 }
 
 export interface FetchPlayroomCreatorTokenVariables {
+  id: UUIDString;
+}
+
+export interface FetchPlayroomCreatorUserHeartbeatData {
+  playroomSession?: {
+    creatorUserHeartbeat?: TimestampString | null;
+  };
+}
+
+export interface FetchPlayroomCreatorUserHeartbeatVariables {
+  id: UUIDString;
+}
+
+export interface FetchPlayroomInvitedUserHeartbeatData {
+  playroomSession?: {
+    invitedUserHeartbeat?: TimestampString | null;
+  };
+}
+
+export interface FetchPlayroomInvitedUserHeartbeatVariables {
+  id: UUIDString;
+}
+
+export interface FetchPlayroomInvitedUserJoinedAtData {
+  playroomSession?: {
+    invitedUserJoinedAt?: TimestampString | null;
+  };
+}
+
+export interface FetchPlayroomInvitedUserJoinedAtVariables {
   id: UUIDString;
 }
 
@@ -221,7 +275,10 @@ export interface GetActivePlayroomSessionByPlayroomSessionIdData {
     gameName: string;
     openedByUserId: UUIDString;
     invitedUserId?: UUIDString | null;
+    invitedUserJoinedAt?: TimestampString | null;
     openedAt: TimestampString;
+    creatorUserHeartbeat?: TimestampString | null;
+    invitedUserHeartbeat?: TimestampString | null;
     closedAt?: TimestampString | null;
     jwtTokenCreator: string;
     jwtTokenInvitedUser?: string | null;
@@ -312,7 +369,10 @@ export interface GetPlayroomSessionByPlayroomSessionIdData {
     gameName: string;
     openedByUserId: UUIDString;
     invitedUserId?: UUIDString | null;
+    invitedUserJoinedAt?: TimestampString | null;
     openedAt: TimestampString;
+    creatorUserHeartbeat?: TimestampString | null;
+    invitedUserHeartbeat?: TimestampString | null;
     closedAt?: TimestampString | null;
     jwtTokenCreator: string;
     jwtTokenInvitedUser?: string | null;
@@ -438,7 +498,10 @@ export interface ListActivePlayroomSessionsByUserAndGameData {
     gameName: string;
     openedByUserId: UUIDString;
     invitedUserId?: UUIDString | null;
+    invitedUserJoinedAt?: TimestampString | null;
     openedAt: TimestampString;
+    creatorUserHeartbeat?: TimestampString | null;
+    invitedUserHeartbeat?: TimestampString | null;
     closedAt?: TimestampString | null;
   } & PlayroomSession_Key)[];
 }
@@ -780,6 +843,33 @@ export interface UpdateCityNameVariables {
   name: string;
 }
 
+export interface UpdatePlayroomCreatorUserHeartbeatData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+
+export interface UpdatePlayroomCreatorUserHeartbeatVariables {
+  id: UUIDString;
+  creatorUserHeartbeat: TimestampString;
+}
+
+export interface UpdatePlayroomInvitedUserHeartbeatData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+
+export interface UpdatePlayroomInvitedUserHeartbeatVariables {
+  id: UUIDString;
+  invitedUserHeartbeat: TimestampString;
+}
+
+export interface UpdatePlayroomInvitedUserJoinedAtData {
+  playroomSession_update?: PlayroomSession_Key | null;
+}
+
+export interface UpdatePlayroomInvitedUserJoinedAtVariables {
+  id: UUIDString;
+  invitedUserJoinedAt: TimestampString;
+}
+
 export interface UpdatePlayroomSessionDetailsData {
   playroomSession_update?: PlayroomSession_Key | null;
 }
@@ -787,6 +877,7 @@ export interface UpdatePlayroomSessionDetailsData {
 export interface UpdatePlayroomSessionDetailsVariables {
   id: UUIDString;
   invitedUserId?: UUIDString | null;
+  invitedUserJoinedAt?: TimestampString | null;
   jwtTokenInvitedUser?: string | null;
   jwtTokenSpectator?: string | null;
 }
@@ -1248,6 +1339,78 @@ export const updatePlayroomSessionDetailsRef: UpdatePlayroomSessionDetailsRef;
 export function updatePlayroomSessionDetails(vars: UpdatePlayroomSessionDetailsVariables): MutationPromise<UpdatePlayroomSessionDetailsData, UpdatePlayroomSessionDetailsVariables>;
 export function updatePlayroomSessionDetails(dc: DataConnect, vars: UpdatePlayroomSessionDetailsVariables): MutationPromise<UpdatePlayroomSessionDetailsData, UpdatePlayroomSessionDetailsVariables>;
 
+interface UpdatePlayroomInvitedUserJoinedAtRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdatePlayroomInvitedUserJoinedAtVariables): MutationRef<UpdatePlayroomInvitedUserJoinedAtData, UpdatePlayroomInvitedUserJoinedAtVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdatePlayroomInvitedUserJoinedAtVariables): MutationRef<UpdatePlayroomInvitedUserJoinedAtData, UpdatePlayroomInvitedUserJoinedAtVariables>;
+  operationName: string;
+}
+export const updatePlayroomInvitedUserJoinedAtRef: UpdatePlayroomInvitedUserJoinedAtRef;
+
+export function updatePlayroomInvitedUserJoinedAt(vars: UpdatePlayroomInvitedUserJoinedAtVariables): MutationPromise<UpdatePlayroomInvitedUserJoinedAtData, UpdatePlayroomInvitedUserJoinedAtVariables>;
+export function updatePlayroomInvitedUserJoinedAt(dc: DataConnect, vars: UpdatePlayroomInvitedUserJoinedAtVariables): MutationPromise<UpdatePlayroomInvitedUserJoinedAtData, UpdatePlayroomInvitedUserJoinedAtVariables>;
+
+interface DeletePlayroomInvitedUserJoinedAtRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeletePlayroomInvitedUserJoinedAtVariables): MutationRef<DeletePlayroomInvitedUserJoinedAtData, DeletePlayroomInvitedUserJoinedAtVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeletePlayroomInvitedUserJoinedAtVariables): MutationRef<DeletePlayroomInvitedUserJoinedAtData, DeletePlayroomInvitedUserJoinedAtVariables>;
+  operationName: string;
+}
+export const deletePlayroomInvitedUserJoinedAtRef: DeletePlayroomInvitedUserJoinedAtRef;
+
+export function deletePlayroomInvitedUserJoinedAt(vars: DeletePlayroomInvitedUserJoinedAtVariables): MutationPromise<DeletePlayroomInvitedUserJoinedAtData, DeletePlayroomInvitedUserJoinedAtVariables>;
+export function deletePlayroomInvitedUserJoinedAt(dc: DataConnect, vars: DeletePlayroomInvitedUserJoinedAtVariables): MutationPromise<DeletePlayroomInvitedUserJoinedAtData, DeletePlayroomInvitedUserJoinedAtVariables>;
+
+interface UpdatePlayroomCreatorUserHeartbeatRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdatePlayroomCreatorUserHeartbeatVariables): MutationRef<UpdatePlayroomCreatorUserHeartbeatData, UpdatePlayroomCreatorUserHeartbeatVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdatePlayroomCreatorUserHeartbeatVariables): MutationRef<UpdatePlayroomCreatorUserHeartbeatData, UpdatePlayroomCreatorUserHeartbeatVariables>;
+  operationName: string;
+}
+export const updatePlayroomCreatorUserHeartbeatRef: UpdatePlayroomCreatorUserHeartbeatRef;
+
+export function updatePlayroomCreatorUserHeartbeat(vars: UpdatePlayroomCreatorUserHeartbeatVariables): MutationPromise<UpdatePlayroomCreatorUserHeartbeatData, UpdatePlayroomCreatorUserHeartbeatVariables>;
+export function updatePlayroomCreatorUserHeartbeat(dc: DataConnect, vars: UpdatePlayroomCreatorUserHeartbeatVariables): MutationPromise<UpdatePlayroomCreatorUserHeartbeatData, UpdatePlayroomCreatorUserHeartbeatVariables>;
+
+interface DeletePlayroomCreatorUserHeartbeatRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeletePlayroomCreatorUserHeartbeatVariables): MutationRef<DeletePlayroomCreatorUserHeartbeatData, DeletePlayroomCreatorUserHeartbeatVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeletePlayroomCreatorUserHeartbeatVariables): MutationRef<DeletePlayroomCreatorUserHeartbeatData, DeletePlayroomCreatorUserHeartbeatVariables>;
+  operationName: string;
+}
+export const deletePlayroomCreatorUserHeartbeatRef: DeletePlayroomCreatorUserHeartbeatRef;
+
+export function deletePlayroomCreatorUserHeartbeat(vars: DeletePlayroomCreatorUserHeartbeatVariables): MutationPromise<DeletePlayroomCreatorUserHeartbeatData, DeletePlayroomCreatorUserHeartbeatVariables>;
+export function deletePlayroomCreatorUserHeartbeat(dc: DataConnect, vars: DeletePlayroomCreatorUserHeartbeatVariables): MutationPromise<DeletePlayroomCreatorUserHeartbeatData, DeletePlayroomCreatorUserHeartbeatVariables>;
+
+interface UpdatePlayroomInvitedUserHeartbeatRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: UpdatePlayroomInvitedUserHeartbeatVariables): MutationRef<UpdatePlayroomInvitedUserHeartbeatData, UpdatePlayroomInvitedUserHeartbeatVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: UpdatePlayroomInvitedUserHeartbeatVariables): MutationRef<UpdatePlayroomInvitedUserHeartbeatData, UpdatePlayroomInvitedUserHeartbeatVariables>;
+  operationName: string;
+}
+export const updatePlayroomInvitedUserHeartbeatRef: UpdatePlayroomInvitedUserHeartbeatRef;
+
+export function updatePlayroomInvitedUserHeartbeat(vars: UpdatePlayroomInvitedUserHeartbeatVariables): MutationPromise<UpdatePlayroomInvitedUserHeartbeatData, UpdatePlayroomInvitedUserHeartbeatVariables>;
+export function updatePlayroomInvitedUserHeartbeat(dc: DataConnect, vars: UpdatePlayroomInvitedUserHeartbeatVariables): MutationPromise<UpdatePlayroomInvitedUserHeartbeatData, UpdatePlayroomInvitedUserHeartbeatVariables>;
+
+interface DeletePlayroomInvitedUserHeartbeatRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: DeletePlayroomInvitedUserHeartbeatVariables): MutationRef<DeletePlayroomInvitedUserHeartbeatData, DeletePlayroomInvitedUserHeartbeatVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: DeletePlayroomInvitedUserHeartbeatVariables): MutationRef<DeletePlayroomInvitedUserHeartbeatData, DeletePlayroomInvitedUserHeartbeatVariables>;
+  operationName: string;
+}
+export const deletePlayroomInvitedUserHeartbeatRef: DeletePlayroomInvitedUserHeartbeatRef;
+
+export function deletePlayroomInvitedUserHeartbeat(vars: DeletePlayroomInvitedUserHeartbeatVariables): MutationPromise<DeletePlayroomInvitedUserHeartbeatData, DeletePlayroomInvitedUserHeartbeatVariables>;
+export function deletePlayroomInvitedUserHeartbeat(dc: DataConnect, vars: DeletePlayroomInvitedUserHeartbeatVariables): MutationPromise<DeletePlayroomInvitedUserHeartbeatData, DeletePlayroomInvitedUserHeartbeatVariables>;
+
 interface ClosePlayroomSessionRef {
   /* Allow users to create refs without passing in DataConnect */
   (vars: ClosePlayroomSessionVariables): MutationRef<ClosePlayroomSessionData, ClosePlayroomSessionVariables>;
@@ -1559,6 +1722,42 @@ export const fetchPlayroomParticipantUserIdsRef: FetchPlayroomParticipantUserIds
 
 export function fetchPlayroomParticipantUserIds(vars: FetchPlayroomParticipantUserIdsVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomParticipantUserIdsData, FetchPlayroomParticipantUserIdsVariables>;
 export function fetchPlayroomParticipantUserIds(dc: DataConnect, vars: FetchPlayroomParticipantUserIdsVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomParticipantUserIdsData, FetchPlayroomParticipantUserIdsVariables>;
+
+interface FetchPlayroomInvitedUserJoinedAtRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: FetchPlayroomInvitedUserJoinedAtVariables): QueryRef<FetchPlayroomInvitedUserJoinedAtData, FetchPlayroomInvitedUserJoinedAtVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: FetchPlayroomInvitedUserJoinedAtVariables): QueryRef<FetchPlayroomInvitedUserJoinedAtData, FetchPlayroomInvitedUserJoinedAtVariables>;
+  operationName: string;
+}
+export const fetchPlayroomInvitedUserJoinedAtRef: FetchPlayroomInvitedUserJoinedAtRef;
+
+export function fetchPlayroomInvitedUserJoinedAt(vars: FetchPlayroomInvitedUserJoinedAtVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomInvitedUserJoinedAtData, FetchPlayroomInvitedUserJoinedAtVariables>;
+export function fetchPlayroomInvitedUserJoinedAt(dc: DataConnect, vars: FetchPlayroomInvitedUserJoinedAtVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomInvitedUserJoinedAtData, FetchPlayroomInvitedUserJoinedAtVariables>;
+
+interface FetchPlayroomCreatorUserHeartbeatRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: FetchPlayroomCreatorUserHeartbeatVariables): QueryRef<FetchPlayroomCreatorUserHeartbeatData, FetchPlayroomCreatorUserHeartbeatVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: FetchPlayroomCreatorUserHeartbeatVariables): QueryRef<FetchPlayroomCreatorUserHeartbeatData, FetchPlayroomCreatorUserHeartbeatVariables>;
+  operationName: string;
+}
+export const fetchPlayroomCreatorUserHeartbeatRef: FetchPlayroomCreatorUserHeartbeatRef;
+
+export function fetchPlayroomCreatorUserHeartbeat(vars: FetchPlayroomCreatorUserHeartbeatVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomCreatorUserHeartbeatData, FetchPlayroomCreatorUserHeartbeatVariables>;
+export function fetchPlayroomCreatorUserHeartbeat(dc: DataConnect, vars: FetchPlayroomCreatorUserHeartbeatVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomCreatorUserHeartbeatData, FetchPlayroomCreatorUserHeartbeatVariables>;
+
+interface FetchPlayroomInvitedUserHeartbeatRef {
+  /* Allow users to create refs without passing in DataConnect */
+  (vars: FetchPlayroomInvitedUserHeartbeatVariables): QueryRef<FetchPlayroomInvitedUserHeartbeatData, FetchPlayroomInvitedUserHeartbeatVariables>;
+  /* Allow users to pass in custom DataConnect instances */
+  (dc: DataConnect, vars: FetchPlayroomInvitedUserHeartbeatVariables): QueryRef<FetchPlayroomInvitedUserHeartbeatData, FetchPlayroomInvitedUserHeartbeatVariables>;
+  operationName: string;
+}
+export const fetchPlayroomInvitedUserHeartbeatRef: FetchPlayroomInvitedUserHeartbeatRef;
+
+export function fetchPlayroomInvitedUserHeartbeat(vars: FetchPlayroomInvitedUserHeartbeatVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomInvitedUserHeartbeatData, FetchPlayroomInvitedUserHeartbeatVariables>;
+export function fetchPlayroomInvitedUserHeartbeat(dc: DataConnect, vars: FetchPlayroomInvitedUserHeartbeatVariables, options?: ExecuteQueryOptions): QueryPromise<FetchPlayroomInvitedUserHeartbeatData, FetchPlayroomInvitedUserHeartbeatVariables>;
 
 interface ListActivePlayroomSessionsByUserAndGameRef {
   /* Allow users to create refs without passing in DataConnect */

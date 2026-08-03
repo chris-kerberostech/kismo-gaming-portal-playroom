@@ -36,6 +36,40 @@ body {
 	gap: 1rem;
 }
 
+.portal-loading {
+	min-height: 100%;
+	display: grid;
+	place-items: center;
+	padding: 1.2rem;
+	box-sizing: border-box;
+}
+
+.portal-loading-card {
+	max-width: 480px;
+	width: min(100%, 480px);
+	padding: 1.4rem 1.25rem;
+	border-radius: 16px;
+	border: 1px solid var(--panel-border);
+	background: rgba(8, 14, 30, 0.78);
+	backdrop-filter: blur(6px);
+	text-align: center;
+}
+
+.portal-loading-card h2 {
+	margin: 0;
+	font-size: clamp(1.15rem, 2.2vw, 1.5rem);
+}
+
+.portal-loading-card p {
+	margin: 0.55rem 0 0;
+	color: var(--text-secondary);
+}
+
+.portal-loading-error {
+	border-color: rgba(255, 122, 122, 0.7);
+	background: rgba(33, 8, 8, 0.7);
+}
+
 .portal-header {
 	display: flex;
 	align-items: center;

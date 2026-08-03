@@ -389,6 +389,78 @@ export function updatePlayroomSessionDetails(dcOrVars, vars) {
   return executeMutation(updatePlayroomSessionDetailsRef(dcInstance, inputVars));
 }
 
+export const updatePlayroomInvitedUserJoinedAtRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdatePlayroomInvitedUserJoinedAt', inputVars);
+}
+updatePlayroomInvitedUserJoinedAtRef.operationName = 'UpdatePlayroomInvitedUserJoinedAt';
+
+export function updatePlayroomInvitedUserJoinedAt(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updatePlayroomInvitedUserJoinedAtRef(dcInstance, inputVars));
+}
+
+export const deletePlayroomInvitedUserJoinedAtRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeletePlayroomInvitedUserJoinedAt', inputVars);
+}
+deletePlayroomInvitedUserJoinedAtRef.operationName = 'DeletePlayroomInvitedUserJoinedAt';
+
+export function deletePlayroomInvitedUserJoinedAt(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deletePlayroomInvitedUserJoinedAtRef(dcInstance, inputVars));
+}
+
+export const updatePlayroomCreatorUserHeartbeatRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdatePlayroomCreatorUserHeartbeat', inputVars);
+}
+updatePlayroomCreatorUserHeartbeatRef.operationName = 'UpdatePlayroomCreatorUserHeartbeat';
+
+export function updatePlayroomCreatorUserHeartbeat(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updatePlayroomCreatorUserHeartbeatRef(dcInstance, inputVars));
+}
+
+export const deletePlayroomCreatorUserHeartbeatRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeletePlayroomCreatorUserHeartbeat', inputVars);
+}
+deletePlayroomCreatorUserHeartbeatRef.operationName = 'DeletePlayroomCreatorUserHeartbeat';
+
+export function deletePlayroomCreatorUserHeartbeat(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deletePlayroomCreatorUserHeartbeatRef(dcInstance, inputVars));
+}
+
+export const updatePlayroomInvitedUserHeartbeatRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'UpdatePlayroomInvitedUserHeartbeat', inputVars);
+}
+updatePlayroomInvitedUserHeartbeatRef.operationName = 'UpdatePlayroomInvitedUserHeartbeat';
+
+export function updatePlayroomInvitedUserHeartbeat(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(updatePlayroomInvitedUserHeartbeatRef(dcInstance, inputVars));
+}
+
+export const deletePlayroomInvitedUserHeartbeatRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return mutationRef(dcInstance, 'DeletePlayroomInvitedUserHeartbeat', inputVars);
+}
+deletePlayroomInvitedUserHeartbeatRef.operationName = 'DeletePlayroomInvitedUserHeartbeat';
+
+export function deletePlayroomInvitedUserHeartbeat(dcOrVars, vars) {
+  const { dc: dcInstance, vars: inputVars } = validateArgs(connectorConfig, dcOrVars, vars, true);
+  return executeMutation(deletePlayroomInvitedUserHeartbeatRef(dcInstance, inputVars));
+}
+
 export const closePlayroomSessionRef = (dcOrVars, vars) => {
   const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
   dcInstance._useGeneratedSdk();
@@ -723,6 +795,45 @@ export function fetchPlayroomParticipantUserIds(dcOrVars, varsOrOptions, options
   
   const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
   return executeQuery(fetchPlayroomParticipantUserIdsRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const fetchPlayroomInvitedUserJoinedAtRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'FetchPlayroomInvitedUserJoinedAt', inputVars);
+}
+fetchPlayroomInvitedUserJoinedAtRef.operationName = 'FetchPlayroomInvitedUserJoinedAt';
+
+export function fetchPlayroomInvitedUserJoinedAt(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(fetchPlayroomInvitedUserJoinedAtRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const fetchPlayroomCreatorUserHeartbeatRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'FetchPlayroomCreatorUserHeartbeat', inputVars);
+}
+fetchPlayroomCreatorUserHeartbeatRef.operationName = 'FetchPlayroomCreatorUserHeartbeat';
+
+export function fetchPlayroomCreatorUserHeartbeat(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(fetchPlayroomCreatorUserHeartbeatRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
+}
+
+export const fetchPlayroomInvitedUserHeartbeatRef = (dcOrVars, vars) => {
+  const { dc: dcInstance, vars: inputVars} = validateArgs(connectorConfig, dcOrVars, vars, true);
+  dcInstance._useGeneratedSdk();
+  return queryRef(dcInstance, 'FetchPlayroomInvitedUserHeartbeat', inputVars);
+}
+fetchPlayroomInvitedUserHeartbeatRef.operationName = 'FetchPlayroomInvitedUserHeartbeat';
+
+export function fetchPlayroomInvitedUserHeartbeat(dcOrVars, varsOrOptions, options) {
+  
+  const { dc: dcInstance, vars: inputVars, options: inputOpts } = validateArgsWithOptions(connectorConfig, dcOrVars, varsOrOptions, options, true, true);
+  return executeQuery(fetchPlayroomInvitedUserHeartbeatRef(dcInstance, inputVars), inputOpts && { fetchPolicy: inputOpts.fetchPolicy });
 }
 
 export const listActivePlayroomSessionsByUserAndGameRef = (dcOrVars, vars) => {

@@ -32,6 +32,36 @@ type VerifyPlayroomTokenResult = {
 	activeCount: number;
 };
 
+type PlayroomRole = "creator" | "invited" | "spectator";
+
+type ParsedPlayroomTokenClaims = {
+	role: PlayroomRole;
+	game: string;
+	playroomSessionId: string;
+	openedByUserId: string;
+	invitedUserId?: string;
+	userId: string;
+};
+
+export type VerifyPlayroomTokenAccessResult = {
+	ok: boolean;
+	playroomSessionId: string | null;
+	activeCount: number;
+	role: PlayroomRole | null;
+	reason:
+		| "invalid_token_payload"
+		| "invalid_claims"
+		| "session_not_found"
+		| "creator_token_mismatch"
+		| "invited_token_mismatch"
+		| "spectator_token_mismatch"
+		| "invited_joined_at_missing"
+		| "invited_joined_at_outside_window"
+		| "ok";
+};
+
+const INVITED_JOIN_WINDOW_MS = 30_000;
+
 let adminApp: AdminApp | null = null;
 let adminAuth: AdminAuth | null = null;
 
@@ -187,6 +217,64 @@ function getJwtClaims(payload: Record<string, unknown>): Record<string, unknown>
 	return claims as Record<string, unknown>;
 }
 
+function resolveClaimString(
+	claims: Record<string, unknown>,
+	key: string,
+): string | null {
+	const raw = claims[key];
+	if (typeof raw !== "string") return null;
+
+	const trimmed = raw.trim();
+	if (!trimmed) return null;
+
+	const lowerKey = key.toLowerCase();
+	const lowerTrimmed = trimmed.toLowerCase();
+	if (!lowerTrimmed.startsWith(lowerKey)) {
+		return trimmed;
+	}
+
+	const suffix = trimmed.slice(key.length);
+	if (suffix.startsWith("=") || suffix.startsWith(":")) {
+		const value = suffix.slice(1).trim();
+		return value || null;
+	}
+
+	return trimmed;
+}
+
+function parseRole(value: string | null): PlayroomRole | null {
+	if (value === "creator" || value === "invited" || value === "spectator") {
+		return value;
+	}
+	return null;
+}
+
+function parsePlayroomTokenClaims(token: string): ParsedPlayroomTokenClaims | null {
+	const payload = parseJwtPayload(token);
+	if (!payload) return null;
+
+	const claims = getJwtClaims(payload);
+	const role = parseRole(resolveClaimString(claims, "role"));
+	const game = resolveClaimString(claims, "game");
+	const playroomSessionId = resolveClaimString(claims, "playroomSessionId");
+	const openedByUserId = resolveClaimString(claims, "openedByUserId");
+	const userId = resolveClaimString(claims, "userid");
+	const invitedUserId = resolveClaimString(claims, "invitedUserId") ?? undefined;
+
+	if (!role || !game || !playroomSessionId || !openedByUserId || !userId) {
+		return null;
+	}
+
+	return {
+		role,
+		game,
+		playroomSessionId,
+		openedByUserId,
+		invitedUserId,
+		userId,
+	};
+}
+
 function extractPlayroomSessionId(token: string): string | null {
 	const payload = parseJwtPayload(token);
 	if (!payload) return null;
@@ -229,6 +317,113 @@ export async function verifyPlayroomTokenWithDataConnect(
 		ok: activeCount > 0,
 		playroomSessionId,
 		activeCount,
+	};
+}
+
+export async function verifyPlayroomTokenAccessWithDataConnect(
+	token: string,
+	env?: FirebaseEnv,
+): Promise<VerifyPlayroomTokenAccessResult> {
+	const tokenClaims = parsePlayroomTokenClaims(token);
+	if (!tokenClaims) {
+		return {
+			ok: false,
+			playroomSessionId: null,
+			activeCount: 0,
+			role: null,
+			reason: "invalid_claims",
+		};
+	}
+
+	await ensureDataConnectAuth(env);
+	const { dataConnect } = ensureWebClients(env);
+	const result = await getActivePlayroomSessionByPlayroomSessionId(dataConnect, {
+		playroomSessionId: tokenClaims.playroomSessionId,
+	});
+	const sessions = result.data.playroomSessions;
+	const activeCount = sessions.length;
+
+	if (activeCount < 1) {
+		return {
+			ok: false,
+			playroomSessionId: tokenClaims.playroomSessionId,
+			activeCount,
+			role: tokenClaims.role,
+			reason: "session_not_found",
+		};
+	}
+
+	const session = sessions[0]!;
+
+	if (tokenClaims.role === "creator") {
+		const matches =
+			typeof session.jwtTokenCreator === "string" && session.jwtTokenCreator === token;
+		return {
+			ok: matches,
+			playroomSessionId: tokenClaims.playroomSessionId,
+			activeCount,
+			role: tokenClaims.role,
+			reason: matches ? "ok" : "creator_token_mismatch",
+		};
+	}
+
+	if (tokenClaims.role === "invited") {
+		const invitedTokenMatches =
+			typeof session.jwtTokenInvitedUser === "string" &&
+			session.jwtTokenInvitedUser.length > 0 &&
+			session.jwtTokenInvitedUser === token;
+
+		if (!invitedTokenMatches) {
+			return {
+				ok: false,
+				playroomSessionId: tokenClaims.playroomSessionId,
+				activeCount,
+				role: tokenClaims.role,
+				reason: "invited_token_mismatch",
+			};
+		}
+
+		if (!session.invitedUserJoinedAt) {
+			return {
+				ok: false,
+				playroomSessionId: tokenClaims.playroomSessionId,
+				activeCount,
+				role: tokenClaims.role,
+				reason: "invited_joined_at_missing",
+			};
+		}
+
+		const joinedAt = Date.parse(session.invitedUserJoinedAt);
+		if (Number.isNaN(joinedAt)) {
+			return {
+				ok: false,
+				playroomSessionId: tokenClaims.playroomSessionId,
+				activeCount,
+				role: tokenClaims.role,
+				reason: "invited_joined_at_outside_window",
+			};
+		}
+
+		const withinWindow = Math.abs(Date.now() - joinedAt) <= INVITED_JOIN_WINDOW_MS;
+		return {
+			ok: withinWindow,
+			playroomSessionId: tokenClaims.playroomSessionId,
+			activeCount,
+			role: tokenClaims.role,
+			reason: withinWindow ? "ok" : "invited_joined_at_outside_window",
+		};
+	}
+
+	const spectatorMatches =
+		typeof session.jwtTokenSpectator === "string" &&
+		session.jwtTokenSpectator.length > 0 &&
+		session.jwtTokenSpectator === token;
+	return {
+		ok: spectatorMatches,
+		playroomSessionId: tokenClaims.playroomSessionId,
+		activeCount,
+		role: tokenClaims.role,
+		reason: spectatorMatches ? "ok" : "spectator_token_mismatch",
 	};
 }
 

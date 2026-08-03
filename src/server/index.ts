@@ -8,7 +8,7 @@ import {
 import type { ChatMessage, Message } from "../shared";
 import {
 	type FirebaseEnv,
-	verifyPlayroomTokenWithDataConnect,
+	verifyPlayroomTokenAccessWithDataConnect,
 } from "./firebase";
 
 const AUTH_COOKIE_NAME = "kp_auth";
@@ -135,11 +135,12 @@ async function verifyTokenWithDataConnect(
 	env: AuthEnv,
 	traceId: string,
 ): Promise<boolean> {
-	const verification = await verifyPlayroomTokenWithDataConnect(token, env);
+	const verification = await verifyPlayroomTokenAccessWithDataConnect(token, env);
 	const playroomSessionId = verification.playroomSessionId;
 	if (!playroomSessionId) {
 		authLog("warn", "claims_missing_session_id", {
 			traceId,
+			reason: verification.reason,
 		});
 		return false;
 	}
@@ -156,9 +157,21 @@ async function verifyTokenWithDataConnect(
 		tokenFp,
 		sessionFp,
 		activeCount: verification.activeCount,
+		role: verification.role,
+		reason: verification.reason,
 	});
 
 	return verification.ok;
+}
+
+function jsonResponse(body: unknown, status = 200): Response {
+	return new Response(JSON.stringify(body), {
+		status,
+		headers: {
+			"Content-Type": "application/json; charset=utf-8",
+			"Cache-Control": "no-store",
+		},
+	});
 }
 
 async function verifyToken(
@@ -345,6 +358,52 @@ export class Chat extends Server<Env> {
 export default {
 	async fetch(request, env) {
 		const url = new URL(request.url);
+		if (url.pathname === "/api/playroom/verify") {
+			const token =
+				url.searchParams.get("token") ||
+				request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ||
+				"";
+			if (!token) {
+				return jsonResponse(
+					{
+						ok: false,
+						reason: "missing_token",
+					},
+					401,
+				);
+			}
+
+			try {
+				const verification = await verifyPlayroomTokenAccessWithDataConnect(
+					token,
+					env as AuthEnv,
+				);
+				return jsonResponse(
+					{
+						ok: verification.ok,
+						role: verification.role,
+						playroomSessionId: verification.playroomSessionId,
+						reason: verification.reason,
+					},
+					verification.ok ? 200 : 401,
+				);
+			} catch (error) {
+				authLog("error", "verify_endpoint_error", {
+					error:
+						error instanceof Error
+							? { name: error.name, message: error.message }
+							: String(error),
+				});
+				return jsonResponse(
+					{
+						ok: false,
+						reason: "verification_exception",
+					},
+					500,
+				);
+			}
+		}
+
 		const pathRequiresAuth = requiresAuth(url.pathname);
 		const wsUpgrade = isWebSocketUpgrade(request);
 		const traceId = crypto.randomUUID().slice(0, 8);

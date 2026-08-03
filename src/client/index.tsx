@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { usePartySocket } from "partysocket/react";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { nanoid } from "nanoid";
 
 import { names, type ChatMessage, type Message } from "../shared";
@@ -19,6 +19,52 @@ function readBootstrapOptions() {
 }
 
 const bootstrapOptions = readBootstrapOptions();
+
+type AccessGateState =
+	| { status: "loading" }
+	| { status: "ready" }
+	| { status: "denied"; reason: string };
+
+async function verifyBootstrapAccess(token: string): Promise<{
+	ok: boolean;
+	reason?: string;
+}> {
+	if (!token) {
+		return {
+			ok: false,
+			reason: "missing_token",
+		};
+	}
+
+	const response = await fetch("/api/playroom/verify", {
+		method: "GET",
+		headers: {
+			Authorization: `Bearer ${token}`,
+			"Cache-Control": "no-store",
+		},
+	});
+
+	if (!response.ok) {
+		try {
+			const payload = (await response.json()) as { reason?: string };
+			return {
+				ok: false,
+				reason: payload.reason || "verification_failed",
+			};
+		} catch {
+			return {
+				ok: false,
+				reason: "verification_failed",
+			};
+		}
+	}
+
+	const payload = (await response.json()) as { ok?: boolean; reason?: string };
+	return {
+		ok: payload.ok === true,
+		reason: payload.reason,
+	};
+}
 
 function ChatPanel({ room }: { room: string }) {
 	const [name] = useState(names[Math.floor(Math.random() * names.length)]);
@@ -148,5 +194,63 @@ function PortalApp() {
 	);
 }
 
+function PortalAppBootstrap() {
+	const [accessState, setAccessState] = useState<AccessGateState>({
+		status: "loading",
+	});
+
+	useEffect(() => {
+		let cancelled = false;
+
+		verifyBootstrapAccess(bootstrapOptions.token)
+			.then((result) => {
+				if (cancelled) return;
+				if (!result.ok) {
+					setAccessState({
+						status: "denied",
+						reason: result.reason || "verification_failed",
+					});
+					return;
+				}
+				setAccessState({ status: "ready" });
+			})
+			.catch(() => {
+				if (cancelled) return;
+				setAccessState({
+					status: "denied",
+					reason: "verification_failed",
+				});
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	if (accessState.status === "loading") {
+		return (
+			<section className="portal-loading" aria-live="polite" aria-busy="true">
+				<div className="portal-loading-card">
+					<h2>Loading playroom...</h2>
+					<p>Verifying your access token.</p>
+				</div>
+			</section>
+		);
+	}
+
+	if (accessState.status === "denied") {
+		return (
+			<section className="portal-loading" aria-live="assertive">
+				<div className="portal-loading-card portal-loading-error">
+					<h2>Access denied</h2>
+					<p>Token verification failed ({accessState.reason}).</p>
+				</div>
+			</section>
+		);
+	}
+
+	return <PortalApp />;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-createRoot(document.getElementById("root")!).render(<PortalApp />);
+createRoot(document.getElementById("root")!).render(<PortalAppBootstrap />);
