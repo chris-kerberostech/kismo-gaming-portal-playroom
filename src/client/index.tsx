@@ -230,11 +230,13 @@ function PortalRealtime({
 	identity,
 	isChatOpen,
 	onConnectionStatusChange,
+	onTwoPlayerDetected,
 }: {
 	room: string;
 	identity: BootstrapIdentity | null;
 	isChatOpen: boolean;
 	onConnectionStatusChange: (status: RealtimeConnectionStatus) => void;
+	onTwoPlayerDetected?: () => void;
 }) {
 	const [name, setName] = useState("Player");
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -298,6 +300,9 @@ function PortalRealtime({
 			if (message.type === "playroom-users-sync") {
 				setSession(message.session);
 				setUsers(message.users);
+				if (message.session.playerOneUserId && message.session.playerTwoUserId) {
+					onTwoPlayerDetected?.();
+				}
 				if (identity) {
 					const me = message.users.find((entry) =>
 						entry.userId === identity.userId.trim().replace(/-/g, "").toLowerCase(),
@@ -433,7 +438,56 @@ function PortalRealtime({
 	);
 }
 
-function PortalApp({ identity }: { identity: BootstrapIdentity | null }) {
+function PortalAppSinglePlayer({
+	identity,
+	onTwoPlayerDetected,
+}: {
+	identity: BootstrapIdentity | null;
+	onTwoPlayerDetected?: () => void;
+}) {
+	const [connectionStatus, setConnectionStatus] = useState<RealtimeConnectionStatus>(
+		"connecting",
+	);
+
+	const connectionStatusLabel =
+		connectionStatus === "connected"
+			? "Realtime connected"
+			: connectionStatus === "reconnecting"
+				? "Realtime reconnecting"
+				: connectionStatus === "disconnected"
+					? "Realtime disconnected"
+					: "Realtime connecting";
+	return (
+		<div className="portal-shell">
+			<header className="portal-header">
+				<div className="portal-header-copy">
+					<h1>Score4 - Arena</h1>
+					<p>Single-player mode against the computer</p>
+				</div>
+				<div className="portal-header-actions">
+					<span
+						className={`portal-realtime-status status-${connectionStatus}`}
+						aria-live="polite"
+					>
+						{connectionStatusLabel}
+					</span>
+				</div>
+			</header>
+
+			<UserContextProvider>
+				<PortalRealtime
+					room={bootstrapOptions.room}
+					identity={identity}
+					isChatOpen={false}
+					onConnectionStatusChange={setConnectionStatus}
+					onTwoPlayerDetected={onTwoPlayerDetected}
+				/>
+			</UserContextProvider>
+		</div>
+	);
+}
+
+function PortalApp2Player({ identity }: { identity: BootstrapIdentity | null }) {
 	const [isChatOpen, setIsChatOpen] = useState(bootstrapOptions.chatOpen);
 	const [connectionStatus, setConnectionStatus] = useState<RealtimeConnectionStatus>(
 		"connecting",
@@ -453,7 +507,7 @@ function PortalApp({ identity }: { identity: BootstrapIdentity | null }) {
 			<header className="portal-header">
 				<div className="portal-header-copy">
 					<h1>Score4 - Arena</h1>
-					<p>Single-player mode against the computer</p>
+					<p>User Duel Mode</p>
 				</div>
 				<div className="portal-header-actions">
 					<span
@@ -487,6 +541,7 @@ function PortalAppBootstrap() {
 	const [accessState, setAccessState] = useState<AccessGateState>({
 		status: "loading",
 	});
+	const [hasTwoPlayers, setHasTwoPlayers] = useState(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -549,7 +604,16 @@ function PortalAppBootstrap() {
 		);
 	}
 
-	return <PortalApp identity={bootstrapIdentity} />;
+	if (hasTwoPlayers) {
+		return <PortalApp2Player identity={bootstrapIdentity} />;
+	}
+
+	return (
+		<PortalAppSinglePlayer
+			identity={bootstrapIdentity}
+			onTwoPlayerDetected={() => setHasTwoPlayers(true)}
+		/>
+	);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

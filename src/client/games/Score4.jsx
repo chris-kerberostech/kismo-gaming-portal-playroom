@@ -10,10 +10,11 @@ import heartPixel from "../components/score4/heartPixel.png";
 import "../styles/score4/board.css";
 import "../styles/score4/styles.css";
 import { useTranslation } from 'react-i18next';
-import { Score4Context, GamePlayedType } from "../contexts/Score4Context";
+import { Score4Context } from "../contexts/Score4Context";
 import { useUserContext } from "../contexts/UserContext";
 import { COLOR_PLAYER, COLOR_KISMO, VOICE_VOL } from "../Constants";
 import NewGameAlert from "../components/score4/NewGameAlert";
+import { GamePlayedType } from "../../shared";
 
 
 // ---- Quotes ----

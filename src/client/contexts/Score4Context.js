@@ -2,11 +2,7 @@
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-
-export const GamePlayedType = {
-    SINGLE_PLAYER: 'SINGLE_PLAYER',
-    TWO_PLAYER: 'TWO_PLAYER',
-}
+import { GamePlayedType } from '../../shared';
 
 const Score4ContextType = {
     gamePlayed: GamePlayedType.SINGLE_PLAYER,

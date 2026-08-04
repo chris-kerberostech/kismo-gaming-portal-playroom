@@ -11,6 +11,12 @@ export enum PlayroomTokenRole {
   SPECTATOR = "spectator",
 }
 
+export const GamePlayedType = {
+	SINGLE_PLAYER: "SINGLE_PLAYER",
+	TWO_PLAYER: "TWO_PLAYER",
+	SPECTATOR: "SPECTATOR",
+} as const;
+
 export type PlayroomUsersSessionInfo = {
 	playroomSessionId: string;
 	playerOneUserId: string | null;
