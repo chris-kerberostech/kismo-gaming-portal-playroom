@@ -86,11 +86,12 @@ body {
 	margin: 0;
 	font-size: clamp(1.4rem, 2.8vw, 2.1rem);
 	letter-spacing: 0.04em;
+	color: var(--text-primary);
 }
 
 .portal-header-copy p {
 	margin: 0.2rem 0 0;
-	color: var(--text-secondary);
+	color: var(--text-primary);
 }
 
 .portal-header-actions {
@@ -156,16 +157,6 @@ body {
 	box-shadow: 0 0 0.45rem rgba(255, 122, 122, 0.82);
 }
 
-.portal-chat-toggle {
-	border: 1px solid rgba(61, 217, 164, 0.8);
-	border-radius: 999px;
-	background: rgba(8, 20, 26, 0.8);
-	color: #d7fff2;
-	font-weight: 700;
-	padding: 0.65rem 1rem;
-	cursor: pointer;
-}
-
 .portal-main {
 	flex: 1;
 	display: grid;
@@ -195,17 +186,20 @@ body {
 	flex-direction: column;
 	overflow: hidden;
 	padding: 0.8rem;
+	color: var(--text-primary);
 }
 
 .portal-chat-header {
 	padding: 0.2rem 0.4rem 0.8rem;
 	border-bottom: 1px solid rgba(123, 167, 255, 0.28);
 	margin-bottom: 0.5rem;
+	color: var(--text-primary);
 }
 
 .portal-chat-header h2 {
 	margin: 0;
 	font-size: 1.1rem;
+	color: var(--text-primary);
 }
 
 .portal-chat-header p {
@@ -240,6 +234,7 @@ body {
 .portal-chat-content {
 	word-break: break-word;
 	line-height: 1.35;
+	color: var(--text-primary);
 }
 
 .portal-chat-form {
@@ -249,26 +244,6 @@ body {
 	margin-top: 0.7rem;
 	padding-top: 0.7rem;
 	border-top: 1px solid rgba(123, 167, 255, 0.28);
-}
-
-.portal-chat-input {
-	width: 100%;
-	box-sizing: border-box;
-	padding: 0.7rem;
-	border-radius: 10px;
-	border: 1px solid rgba(123, 167, 255, 0.5);
-	background: rgba(5, 10, 24, 0.7);
-	color: var(--text-primary);
-}
-
-.portal-chat-send {
-	padding: 0.7rem 0.95rem;
-	border: 0;
-	border-radius: 10px;
-	background: linear-gradient(130deg, var(--accent-a), var(--accent-b));
-	color: #0a1327;
-	font-weight: 800;
-	cursor: pointer;
 }
 
 .portal-game-panel {

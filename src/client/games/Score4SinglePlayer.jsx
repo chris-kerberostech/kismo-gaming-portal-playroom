@@ -10,6 +10,7 @@ import heartPixel from "../components/score4/heartPixel.png";
 import "../styles/score4/board.css";
 import "../styles/score4/styles.css";
 import { useTranslation } from 'react-i18next';
+import { Button } from "@mantine/core";
 import { useUserContext } from "../contexts/UserContext";
 import { COLOR_PLAYER, COLOR_KISMO, VOICE_VOL } from "../Constants";
 import NewGameAlert from "../components/score4/NewGameAlert";
@@ -735,22 +736,33 @@ export default function Score4SinglePlayer({ initialUserScore = 0, onUserScoreCh
                         minHeight: 80,
                     }}
                 >
-                    <button
-                        className="reset-btn neon-glow"
+                    <Button
+                        radius="md"
+                        variant="outline"
+                        color="pink"
+                        styles={{
+                            root: {
+                                height: "2.9rem",
+                                paddingLeft: "1.2rem",
+                                paddingRight: "1.2rem",
+                                borderRadius: "16px",
+                                boxShadow: "0 0 16px #de0b59, 0 0 20px #32b2ea",
+                                background: "#151620",
+                                color: "#fff",
+                            },
+                            label: {
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                lineHeight: "1.1",
+                                fontSize: "1.02rem",
+                                fontWeight: 700,
+                                textTransform: "none",
+                            },
+                        }}
                         style={{
                             margin: "2rem auto",
                             display: "block",
-                            padding: "1rem 2rem",
-                            fontSize: "1.1rem",
-                            background: "#151620",
-                            color: "#fff",
-                            border: "2px solid #de0b59",
-                            borderRadius: "16px",
-                            cursor: "pointer",
-                            boxShadow: "0 0 16px #de0b59, 0 0 20px #32b2ea",
-                            fontWeight: 600,
-                            alignItems: "center",
-                            justifyContent: "center",
                         }}
                         onClick={() => {
                             setBoard(emptyBoard());
@@ -763,7 +775,7 @@ export default function Score4SinglePlayer({ initialUserScore = 0, onUserScoreCh
                         }}
                     >
                         {t('newgame')}
-                    </button>
+                    </Button>
                 </div>
             )}
         </div>

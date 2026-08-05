@@ -2,6 +2,11 @@ import { createRoot } from "react-dom/client";
 import { usePartySocket } from "partysocket/react";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { nanoid } from "nanoid";
+import { Button, MantineProvider, TextInput } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
+import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
+import "../i18n/i18n";
 
 import {
 	PlayroomTokenRole,
@@ -211,16 +216,49 @@ function ChatPanel({
 					content.value = "";
 				}}
 			>
-				<input
-					type="text"
+				<TextInput
 					name="content"
-					className="portal-chat-input"
 					placeholder={`Hello ${name}! Type a message...`}
 					autoComplete="off"
+					styles={{
+						root: { width: "100%" },
+						input: {
+							height: "2.4rem",
+							lineHeight: "2.4rem",
+							borderRadius: "10px",
+							border: "1px solid rgba(123, 167, 255, 0.5)",
+							background: "rgba(5, 10, 24, 0.7)",
+							color: "var(--text-primary)",
+						},
+					}}
 				/>
-				<button type="submit" className="portal-chat-send">
+				<Button
+					type="submit"
+					radius="md"
+					variant="gradient"
+					gradient={{ from: "teal.4", to: "cyan.4", deg: 130 }}
+					styles={{
+						root: {
+							height: "2.4rem",
+							minWidth: "3.2rem",
+							paddingLeft: "0.95rem",
+							paddingRight: "0.95rem",
+							color: "#0a1327",
+							fontSize: "0.82rem",
+							fontWeight: 800,
+							letterSpacing: "0.03em",
+							textTransform: "none",
+						},
+						label: {
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							lineHeight: "1",
+						},
+					}}
+				>
 					Send
-				</button>
+				</Button>
 			</form>
 		</section>
 	);
@@ -564,12 +602,31 @@ function PortalApp2Player({ identity }: { identity: BootstrapIdentity | null }) 
 					>
 						{connectionStatusLabel}
 					</span>
-					<button
+					<Button
 						onClick={() => setIsChatOpen((open) => !open)}
-						className="portal-chat-toggle"
+						radius="xl"
+						variant="outline"
+						color="teal"
+						styles={{
+							root: {
+								height: "2.25rem",
+								paddingLeft: "1rem",
+								paddingRight: "1rem",
+								fontSize: "0.82rem",
+								fontWeight: 700,
+								letterSpacing: "0.02em",
+								textTransform: "none",
+							},
+							label: {
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								lineHeight: "1",
+							},
+						}}
 					>
 						{isChatOpen ? "Hide Chat" : "Show Chat"}
-					</button>
+					</Button>
 				</div>
 			</header>
 
@@ -666,4 +723,9 @@ function PortalAppBootstrap() {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-createRoot(document.getElementById("root")!).render(<PortalAppBootstrap />);
+createRoot(document.getElementById("root")!).render(
+	<MantineProvider>
+		<Notifications />
+		<PortalAppBootstrap />
+	</MantineProvider>,
+);
