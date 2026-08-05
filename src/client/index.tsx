@@ -8,8 +8,6 @@ import {
 	type ChatMessage,
 	type Message,
 } from "../shared";
-// @ts-expect-error - JS context module is intentionally imported from transferred game sources.
-import Score4ContextProvider from "./contexts/Score4Context";
 import {
 	UserContextProvider,
 	useUserContext,
@@ -427,12 +425,10 @@ function PortalRealtime({
 				<ChatPanel room={room} messages={messages} onSend={sendChatMessage} name={name} />
 			) : null}
 			<section className="portal-game-panel" aria-label="Score4 game area">
-				<Score4ContextProvider
+				<Score4
 					initialUserScore={myProfileScore}
 					onUserScoreChange={publishUserScoreUpdate}
-				>
-					<Score4 />
-				</Score4ContextProvider>
+				/>
 			</section>
 		</main>
 	);

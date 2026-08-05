@@ -1,5 +1,5 @@
 // src/Score4.jsx
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Board from "../components/score4/Board";
 import KismoAvatarNeon from "../components/score4/KismoAvatarNeon";
 import QuoteEngine from "../components/score4/QuoteEngine";
@@ -10,11 +10,9 @@ import heartPixel from "../components/score4/heartPixel.png";
 import "../styles/score4/board.css";
 import "../styles/score4/styles.css";
 import { useTranslation } from 'react-i18next';
-import { Score4Context } from "../contexts/Score4Context";
 import { useUserContext } from "../contexts/UserContext";
 import { COLOR_PLAYER, COLOR_KISMO, VOICE_VOL } from "../Constants";
 import NewGameAlert from "../components/score4/NewGameAlert";
-import { GamePlayedType } from "../../shared";
 
 
 // ---- Quotes ----
@@ -198,19 +196,40 @@ function parseUserIdFromToken(token) {
 }
 
 // ===== Component =====
-export default function Score4() {
+export default function Score4({ initialUserScore = 0, onUserScoreChange = null }) {
 
     // ========== i18n ==========
     const { t, i18n } = useTranslation();
-    // chris: Quotes are loaded from the GameContext
-    const { victoryQuotes, defeatQuotes, tieQuotes, starterQuotes, raiseBetQuote } = useContext(Score4Context);
+
+    const [victoryQuotes, setVictoryQuotes] = useState([]);
+    const [defeatQuotes, setDefeatQuotes] = useState([]);
+    const [tieQuotes, setTieQuotes] = useState([]);
+    const [starterQuotes, setStarterQuotes] = useState([]);
+    const [raiseBetQuote, setRaiseBetQuote] = useState([]);
+
+    useEffect(() => {
+        const language = i18n.language || "en";
+
+        fetch(`/locales/${language}/translation.json`)
+            .then((response) => response.json())
+            .then((quotes) => {
+                setVictoryQuotes(Object.values(quotes.victoryQuotes || {}));
+                setDefeatQuotes(Object.values(quotes.defeatQuotes || {}));
+                setTieQuotes(Object.values(quotes.tieQuotes || {}));
+                setStarterQuotes(Object.values(quotes.starterQuotes || {}));
+                setRaiseBetQuote(Object.values(quotes.raiseBetQuotes || {}));
+            })
+            .catch(() => {
+                // Keep existing quotes when translation payload fails.
+            });
+    }, [i18n.language]);
 
 
     // ---------- GAME ----------
     const [board, setBoard] = useState(emptyBoard());
     const [currentPlayer, setCurrentPlayer] = useState(COLOR_PLAYER);
     const [gameOver, setGameOver] = useState(false);
-    const [quote, setQuote] = useState(starterQuotes[0]);
+    const [quote, setQuote] = useState("");
     const [isKismoMoving, setIsKismoMoving] = useState(false);
     const [avatarState, setAvatarState] = useState("teasing");
     const [playerWins, setPlayerWins] = useState(0);
@@ -242,14 +261,9 @@ export default function Score4() {
     // chris: update : use the values from the context
     // const [userAvatarUrl, setUserAvatarUrl] = useState("https://i.pravatar.cc/150?img=5");
     // const [userNickname, setUserNickname] = useState("User");
-    const {
-        userAvatarUrl: fallbackUserAvatarUrl,
-        userNickname: fallbackUserNickname,
-        userScore,
-        gamePlayed,
-        setGamePlayed,
-        updateUserScore,
-    } = useContext(Score4Context);
+    const fallbackUserAvatarUrl = "https://i.pravatar.cc/150?img=5";
+    const fallbackUserNickname = "User";
+    const [userScore, setUserScore] = useState(initialUserScore || 0);
     const { getUserProfileById, fetchUserProfileById } = useUserContext();
 
     const room = React.useMemo(() => {
@@ -269,6 +283,16 @@ export default function Score4() {
         typeof resolvedProfile?.score === "number" ? resolvedProfile.score : userScore;
 
     const [hasHydratedProfileScore, setHasHydratedProfileScore] = useState(false);
+
+    useEffect(() => {
+        if (typeof initialUserScore !== "number") return;
+        setUserScore(initialUserScore);
+    }, [initialUserScore]);
+
+    useEffect(() => {
+        if (!starterQuotes.length) return;
+        setQuote((current) => current || starterQuotes[0]);
+    }, [starterQuotes]);
 
     useEffect(() => {
         if (!authenticatedUserId || !room) return;
@@ -296,11 +320,14 @@ export default function Score4() {
     useEffect(() => {
         console.debug("Session sparks updated:", sessionSparks);
 
-        if (sessionSparks !== userScore) {
-            console.debug("need to update old score :", userScore);
-            updateUserScore(sessionSparks);
+        if (sessionSparks === userScore) return;
+        setUserScore(sessionSparks);
+
+        if (typeof onUserScoreChange === "function") {
+            onUserScoreChange(sessionSparks);
+            console.debug("User score updated to", sessionSparks);
         }
-    }, [sessionSparks, userScore]);
+    }, [sessionSparks, userScore, onUserScoreChange]);
 
     // chris: update 14/09/2025 : show popup for new game choice
     useEffect(() => {
