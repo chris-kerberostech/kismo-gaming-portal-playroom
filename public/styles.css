@@ -166,6 +166,11 @@ body {
 
 .portal-main.chat-open {
 	grid-template-columns: minmax(300px, 35%) 1fr;
+	align-items: start;
+}
+
+.portal-main.chat-open .portal-chat-panel {
+	height: clamp(340px, 62vh, 620px);
 }
 
 .portal-main.chat-closed {
@@ -210,6 +215,7 @@ body {
 
 .portal-chat-messages {
 	flex: 1;
+	min-height: 0;
 	overflow: auto;
 	padding-right: 0.2rem;
 	display: flex;
@@ -278,7 +284,12 @@ body {
 @media (max-width: 950px) {
 	.portal-main.chat-open {
 		grid-template-columns: 1fr;
-		grid-template-rows: minmax(290px, 35vh) 1fr;
+		grid-template-rows: auto minmax(0, 1fr);
+	}
+
+	.portal-main.chat-open .portal-chat-panel {
+		height: auto;
+		max-height: min(62vh, 520px);
 	}
 
 	.portal-shell {

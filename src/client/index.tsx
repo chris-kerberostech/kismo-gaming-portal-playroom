@@ -186,6 +186,13 @@ function ChatPanel({
 	name: string;
 }) {
 	const title = useMemo(() => `Room ${room}`, [room]);
+	const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		const container = messagesContainerRef.current;
+		if (!container) return;
+		container.scrollTop = container.scrollHeight;
+	}, [messages]);
 
 	return (
 		<section className="portal-chat-panel" aria-label="Game chat panel">
@@ -193,7 +200,7 @@ function ChatPanel({
 				<h2>Game Chat</h2>
 				<p>{title}</p>
 			</div>
-			<div className="portal-chat-messages">
+			<div ref={messagesContainerRef} className="portal-chat-messages">
 				{messages.map((message) => (
 					<div key={message.id} className="portal-chat-message">
 						<div className="portal-chat-user">{message.user}</div>
