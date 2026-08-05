@@ -5,6 +5,7 @@ import KismoAvatarNeon from "../components/score4/KismoAvatarNeon";
 import QuoteEngine from "../components/score4/QuoteEngine";
 import OverlayBanner from "../components/score4/OverlayBanner";
 import ConfettiHearts from "../components/score4/ConfettiHearts";
+import ResultParticles from "../components/score4/ResultParticles";
 import UserAvatar from "../components/score4/UserAvatar";
 import heartPixel from "../components/score4/heartPixel.png";
 import "../styles/score4/board.css";
@@ -608,7 +609,11 @@ export default function Score4SinglePlayer({ initialUserScore = 0, onUserScoreCh
             {/* Kismo avatar + quote + effects */}
             <KismoAvatarNeon state={avatarState} />
             <OverlayBanner show={banner.show} type={banner.type} />
-            <ConfettiHearts show={gameOver && avatarState === "sad"} />
+            <ConfettiHearts show={banner.show && banner.type === "victory"} />
+            <ResultParticles
+                show={banner.show && (banner.type === "defeat" || banner.type === "draw")}
+                type={banner.type}
+            />
             <QuoteEngine quote={quote} />
 
             {/* Raise-bet prompt */}

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Modal } from "@mantine/core";
 
 import {
 	PlayroomTokenRole,
@@ -12,8 +13,16 @@ import {
 import Board from "../components/score4/Board";
 // @ts-expect-error - Existing UserAvatar is currently a JSX module without TS declarations.
 import UserAvatar from "../components/score4/UserAvatar";
+// @ts-expect-error - Existing OverlayBanner is currently a JSX module without TS declarations.
+import OverlayBanner from "../components/score4/OverlayBanner";
+// @ts-expect-error - Existing ConfettiHearts is currently a JSX module without TS declarations.
+import ConfettiHearts from "../components/score4/ConfettiHearts";
+// @ts-expect-error - Existing ResultParticles is currently a JSX module without TS declarations.
+import ResultParticles from "../components/score4/ResultParticles";
 import "../styles/score4/board.css";
 import "../styles/score4/styles.css";
+import heartPixel from "../components/score4/heartPixel.png";
+
 
 const SOUND_PREFERENCE_KEY = "score4-two-player-sound-on";
 
@@ -156,6 +165,19 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 	const previousBoardRef = useRef<Score4TwoPlayerCell[][] | null>(null);
 	const lastWinnerUpdateAtRef = useRef<number | null>(null);
 	const localWinnerStateUpdatedAtRef = useRef<number | null>(null);
+	const lastOutcomeBannerUpdatedAtRef = useRef<number | null>(null);
+	const lastSpectatorPopupUpdatedAtRef = useRef<number | null>(null);
+	const [banner, setBanner] = useState<{
+		show: boolean;
+		type: "victory" | "defeat" | "draw" | "";
+	}>({ show: false, type: "" });
+	const [spectatorWinnerPopup, setSpectatorWinnerPopup] = useState<{
+		open: boolean;
+		winner: Score4TwoPlayerSlot | null;
+	}>({
+		open: false,
+		winner: null,
+	});
 
 	useEffect(() => {
 		if (!remoteState) return;
@@ -244,6 +266,46 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 		onSessionWinner(state.winner);
 	}, [mySlot, onSessionWinner, state.status, state.updatedAt, state.winner]);
 
+	useEffect(() => {
+		if (state.status === "playing") {
+			lastOutcomeBannerUpdatedAtRef.current = null;
+			lastSpectatorPopupUpdatedAtRef.current = null;
+			setBanner({ show: false, type: "" });
+			setSpectatorWinnerPopup({ open: false, winner: null });
+			return;
+		}
+
+		if (lastOutcomeBannerUpdatedAtRef.current === state.updatedAt) return;
+		lastOutcomeBannerUpdatedAtRef.current = state.updatedAt;
+
+		let type: "victory" | "defeat" | "draw" = "draw";
+		if (state.status === "draw") {
+			type = "draw";
+		} else if (state.status === "won" && state.winner) {
+			if (isSpectator) {
+				type = "victory";
+			} else {
+				type = mySlot === state.winner ? "victory" : "defeat";
+			}
+		}
+
+		setBanner({ show: true, type });
+		const timeout = window.setTimeout(() => {
+			setBanner({ show: false, type: "" });
+		}, 1800);
+
+		return () => window.clearTimeout(timeout);
+	}, [isSpectator, mySlot, state.status, state.updatedAt, state.winner]);
+
+	useEffect(() => {
+		if (!isSpectator) return;
+		if (state.status !== "won" || !state.winner) return;
+		if (lastSpectatorPopupUpdatedAtRef.current === state.updatedAt) return;
+
+		lastSpectatorPopupUpdatedAtRef.current = state.updatedAt;
+		setSpectatorWinnerPopup({ open: true, winner: state.winner });
+	}, [isSpectator, state.status, state.updatedAt, state.winner]);
+
 	const bothPlayersPresent = Boolean(playerOneId && playerTwoId);
 	const canPlay =
 		bothPlayersPresent &&
@@ -258,6 +320,20 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 		typeof playerOneProfile?.score === "number" ? playerOneProfile.score : 0;
 	const playerTwoPersistentScore =
 		typeof playerTwoProfile?.score === "number" ? playerTwoProfile.score : 0;
+	const popupWinnerProfile =
+		spectatorWinnerPopup.winner === "player_one" ? playerOneProfile : playerTwoProfile;
+	const popupWinnerName =
+		popupWinnerProfile?.name ||
+		(spectatorWinnerPopup.winner === "player_one" ? "Player One" : "Player Two");
+	const popupWinnerImage =
+		popupWinnerProfile?.imageUrl ||
+		(spectatorWinnerPopup.winner === "player_one"
+			? "https://i.pravatar.cc/150?img=12"
+			: "https://i.pravatar.cc/150?img=32");
+	const popupWinnerScore =
+		spectatorWinnerPopup.winner === "player_one"
+			? playerOnePersistentScore
+			: playerTwoPersistentScore;
 	const playerOneSessionScore = session?.playerOneSessionScore ?? 0;
 	const playerTwoSessionScore = session?.playerTwoSessionScore ?? 0;
 
@@ -357,6 +433,66 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 				<span>{statusText}</span>
 			</div>
 
+			<OverlayBanner show={banner.show} type={banner.type} />
+			<ConfettiHearts show={banner.show && banner.type === "victory"} />
+			<ResultParticles
+				show={banner.show && (banner.type === "defeat" || banner.type === "draw")}
+				type={banner.type}
+			/>
+
+			<Modal
+				opened={spectatorWinnerPopup.open && Boolean(spectatorWinnerPopup.winner)}
+				onClose={() => setSpectatorWinnerPopup({ open: false, winner: null })}
+				centered
+				radius="md"
+				padding="lg"
+				overlayProps={{ backgroundOpacity: 0.72, blur: 3 }}
+				title={<span style={{ fontSize: "1.12rem", fontWeight: 800 }}>Round Winner</span>}
+			>
+				<div
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						alignItems: "center",
+						gap: 12,
+					}}
+				>
+					<img
+						src={popupWinnerImage}
+						alt={popupWinnerName}
+						style={{
+							width: 100,
+							height: 100,
+							borderRadius: "50%",
+							border: "2px solid #de0b59",
+							objectFit: "cover",
+							objectPosition: "center top",
+							boxShadow: "0 0 10px #de0b59",
+						}}
+					/>
+					<div style={{ fontSize: "1.14rem", fontWeight: 700, textAlign: "center" }}>
+						{popupWinnerName} wins this round
+					</div>
+					<div
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: 8,
+							fontSize: "1.1rem",
+							fontWeight: 700,
+							color: "#de0b59",
+						}}
+					>
+						<img
+							src={heartPixel}
+							alt="heart"
+							style={{ width: 34, height: 34, filter: "drop-shadow(0 0 8px #de0b59)" }}
+						/>
+						<span>{popupWinnerScore}</span>
+					</div>
+				</div>
+			</Modal>
+
 			<Board board={toBoardClasses(state.board)} onMove={handleMove} gameOver={state.status !== "playing"} />
 
 			<div
@@ -374,8 +510,9 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 						url={playerOneProfile?.imageUrl || "https://i.pravatar.cc/150?img=12"}
 						nickname={playerOneProfile?.name || "Player One"}
 						active={state.turn === "player_one" && state.status === "playing"}
+						borderColor="#de0b59"
 					/>
-					<div
+					{/* <div
 						style={{
 							fontSize: "1.05rem",
 							fontWeight: 700,
@@ -384,6 +521,36 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 						}}
 					>
 						Score: {playerOnePersistentScore}
+					</div> */}
+					<div
+						style={{
+							display: "flex",
+							alignItems: "center",
+							marginLeft: 16,
+							userSelect: "none",
+						}}
+					>
+						<img
+							src={heartPixel}
+							alt="spark"
+							style={{
+								width: 28,
+								height: 28,
+								filter: "drop-shadow(0 0 10px #de0b59)",
+								marginRight: 5,
+							}}
+						/>
+						<span
+							style={{
+								fontSize: "1.15rem",
+								fontWeight: "bold",
+								color: "#de0b59",
+								textShadow: "0 0 6px #de0b59",
+								marginLeft: 2,
+							}}
+						>
+							{playerOnePersistentScore}
+						</span>
 					</div>
 				</div>
 				<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
@@ -391,8 +558,9 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 						url={playerTwoProfile?.imageUrl || "https://i.pravatar.cc/150?img=32"}
 						nickname={playerTwoProfile?.name || "Player Two"}
 						active={state.turn === "player_two" && state.status === "playing"}
+						borderColor="#32b2ea"
 					/>
-					<div
+					{/* <div
 						style={{
 							fontSize: "1.05rem",
 							fontWeight: 700,
@@ -401,6 +569,36 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 						}}
 					>
 						Score: {playerTwoPersistentScore}
+					</div> */}
+					<div
+						style={{
+							display: "flex",
+							alignItems: "center",
+							marginLeft: 16,
+							userSelect: "none",
+						}}
+					>
+						<img
+							src={heartPixel}
+							alt="spark"
+							style={{
+								width: 28,
+								height: 28,
+								filter: "drop-shadow(0 0 10px #de0b59)",
+								marginRight: 5,
+							}}
+						/>
+						<span
+							style={{
+								fontSize: "1.15rem",
+								fontWeight: "bold",
+								color: "#de0b59",
+								textShadow: "0 0 6px #de0b59",
+								marginLeft: 2,
+							}}
+						>
+							{playerTwoPersistentScore}
+						</span>
 					</div>
 				</div>
 			</div>

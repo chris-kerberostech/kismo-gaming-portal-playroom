@@ -388,6 +388,37 @@ async function upsertAuthenticatedUserProfile(args: {
 
 	const stubId = env.Chat.idFromName(room);
 	const stub = env.Chat.get(stubId);
+
+	const existingProfileResponse = await stub.fetch(
+		`https://internal/users?op=get-user-profile&userId=${encodeURIComponent(identity.userId)}`,
+		{
+			method: "GET",
+		},
+	);
+
+	let existingScore: number | null = null;
+	if (existingProfileResponse.ok) {
+		const existingPayload = (await existingProfileResponse.json()) as {
+			ok?: boolean;
+			profile?: {
+				score?: number | null;
+			} | null;
+		};
+		if (typeof existingPayload.profile?.score === "number") {
+			existingScore = existingPayload.profile.score;
+		}
+	}
+
+	const tokenScore = typeof identity.score === "number" ? identity.score : null;
+	const dataConnectScore = typeof profile.score === "number" ? profile.score : null;
+	// DO score is authoritative once a profile exists in the room store.
+	const mergedScore =
+		typeof existingScore === "number"
+			? existingScore
+			: typeof dataConnectScore === "number"
+				? dataConnectScore
+				: tokenScore;
+
 	const response = await stub.fetch("https://internal/users?op=upsert", {
 		method: "POST",
 		headers: {
@@ -396,7 +427,7 @@ async function upsertAuthenticatedUserProfile(args: {
 		},
 		body: JSON.stringify({
 			...profile,
-			score: identity.score,
+			score: mergedScore,
 		}),
 	});
 
@@ -412,7 +443,10 @@ async function upsertAuthenticatedUserProfile(args: {
 			traceId,
 			room,
 			userId: payload.profile?.userId ?? identity.userId,
-			scoreFromTokenClaim: identity.score,
+			scoreFromTokenClaim: tokenScore,
+			scoreFromDataConnectProfile: dataConnectScore,
+			scoreExistingInDoBeforeUpsert: existingScore,
+			scoreMergedForUpsert: mergedScore,
 			scoreStoredInDo: payload.profile?.score ?? null,
 		});
 	}
@@ -698,6 +732,17 @@ export class Chat extends Server<Env> {
 		});
 	}
 
+	incrementUserScore(userId: string, incrementBy = 1): PlayroomUserProfile {
+		const normalizedIncrement = Number.isFinite(incrementBy) ? incrementBy : 0;
+		const existing = this.loadUserProfile(userId);
+		const currentScore =
+			typeof existing?.score === "number" && Number.isFinite(existing.score)
+				? existing.score
+				: 0;
+
+		return this.updateUserScore(userId, currentScore + normalizedIncrement);
+	}
+
 	incrementTwoPlayerSessionScore(
 		playroomSessionId: string,
 		winner: "player_one" | "player_two",
@@ -738,6 +783,39 @@ export class Chat extends Server<Env> {
 				updatedAt: Date.now(),
 			};
 		const users = this.listProfilesForSession(session);
+
+		if (this.isDevRuntime()) {
+			const playerOneId = session.playerOneUserId
+				? this.normalizeUserId(session.playerOneUserId)
+				: null;
+			const playerTwoId = session.playerTwoUserId
+				? this.normalizeUserId(session.playerTwoUserId)
+				: null;
+			const usersScoreSnapshot = users.map((user) => ({
+				userId: user.userId,
+				score: typeof user.score === "number" ? user.score : null,
+			}));
+			const playerOneScore =
+				typeof users.find((user) => user.userId === playerOneId)?.score === "number"
+					? users.find((user) => user.userId === playerOneId)?.score
+					: null;
+			const playerTwoScore =
+				typeof users.find((user) => user.userId === playerTwoId)?.score === "number"
+					? users.find((user) => user.userId === playerTwoId)?.score
+					: null;
+
+			authLog("info", "playroom_users_sync_snapshot_dev", {
+				playroomSessionId: session.playroomSessionId,
+				playerOneUserId: playerOneId,
+				playerOnePersistentScore: playerOneScore,
+				playerTwoUserId: playerTwoId,
+				playerTwoPersistentScore: playerTwoScore,
+				spectatorCount: session.spectatorUserIds.length,
+				usersCount: users.length,
+					usersScoreSnapshot,
+			});
+		}
+
 		this.broadcast(
 			JSON.stringify({
 				type: "playroom-users-sync",
@@ -1038,7 +1116,18 @@ export class Chat extends Server<Env> {
 				return;
 			}
 
-			this.incrementTwoPlayerSessionScore(parsed.playroomSessionId, parsed.winner);
+			const updatedSession = this.incrementTwoPlayerSessionScore(
+				parsed.playroomSessionId,
+				parsed.winner,
+			);
+			const winnerUserId =
+				parsed.winner === "player_one"
+					? updatedSession.playerOneUserId
+					: updatedSession.playerTwoUserId;
+
+			if (winnerUserId) {
+				this.incrementUserScore(winnerUserId, 1);
+			}
 			this.broadcastUsersSync(parsed.playroomSessionId);
 			return;
 		}

@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function UserAvatar({ url, nickname, active }) {
+export default function UserAvatar({ url, nickname, active, borderColor = "#de0b59" }) {
   return (
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -12,10 +12,10 @@ export default function UserAvatar({ url, nickname, active }) {
           height: active ? 80 : 54,
           borderRadius: "50%",
           overflow: "hidden",
-          border: active ? "3px solid #de0b59" : "2px solid #39394d",
+          border: active ? `3px solid ${borderColor}` : `2px solid ${borderColor}`,
           boxShadow: active
-            ? "0 0 24px #de0b59, 0 0 36px #32b2ea"
-            : "0 0 6px #222",
+            ? `0 0 24px ${borderColor}, 0 0 36px #32b2ea`
+            : `0 0 8px ${borderColor}`,
           transition: "all 0.33s cubic-bezier(.55,1.8,.52,.91)",
           position: "relative",
         }}

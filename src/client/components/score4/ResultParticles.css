@@ -1,0 +1,40 @@
+.result-particles-layer {
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 920;
+	overflow: hidden;
+}
+
+.result-particle {
+	position: absolute;
+	top: -24px;
+	border-radius: 999px;
+	opacity: 0;
+	animation: result-particle-fall linear forwards;
+}
+
+.result-particles-layer.defeat .result-particle {
+	background: radial-gradient(circle at 35% 35%, #ffbccd 0%, #de0b59 48%, #6b0024 100%);
+	box-shadow: 0 0 10px #de0b59cc;
+}
+
+.result-particles-layer.draw .result-particle {
+	background: radial-gradient(circle at 35% 35%, #d8f7ff 0%, #32b2ea 48%, #003a5d 100%);
+	box-shadow: 0 0 10px #32b2eacc;
+}
+
+@keyframes result-particle-fall {
+	0% {
+		opacity: 0;
+		transform: translateY(0) scale(0.95);
+	}
+	15% {
+		opacity: 0.95;
+		transform: translateY(28px) scale(1.06);
+	}
+	100% {
+		opacity: 0;
+		transform: translateY(82vh) scale(0.8);
+	}
+}
