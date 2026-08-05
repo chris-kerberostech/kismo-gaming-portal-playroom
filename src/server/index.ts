@@ -926,6 +926,28 @@ export class Chat extends Server<Env> {
 			return;
 		}
 
+		if (parsed.type === "score4-two-player-state") {
+			const bound = this.connectionUsers.get(connection.id);
+			if (!bound) {
+				return;
+			}
+
+			if (bound.playroomSessionId !== parsed.playroomSessionId) {
+				if (this.isDevRuntime()) {
+					authLog("warn", "score4_two_player_state_rejected_dev", {
+						reason: "session_mismatch",
+						connectionId: connection.id,
+						boundPlayroomSessionId: bound.playroomSessionId,
+						incomingPlayroomSessionId: parsed.playroomSessionId,
+					});
+				}
+				return;
+			}
+
+			this.broadcast(JSON.stringify(parsed));
+			return;
+		}
+
 		if (parsed.type === "add" || parsed.type === "update") {
 			this.broadcast(message);
 			this.saveMessage(parsed);

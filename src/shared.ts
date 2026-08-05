@@ -11,12 +11,6 @@ export enum PlayroomTokenRole {
   SPECTATOR = "spectator",
 }
 
-export const GamePlayedType = {
-	SINGLE_PLAYER: "SINGLE_PLAYER",
-	TWO_PLAYER: "TWO_PLAYER",
-	SPECTATOR: "SPECTATOR",
-} as const;
-
 export type PlayroomUsersSessionInfo = {
 	playroomSessionId: string;
 	playerOneUserId: string | null;
@@ -30,6 +24,20 @@ export type PlayroomUserProfile = {
 	name: string;
 	imageUrl: string | null;
 	score: number | null;
+	updatedAt: number;
+};
+
+export type Score4TwoPlayerSlot = "player_one" | "player_two";
+
+export type Score4TwoPlayerCell = Score4TwoPlayerSlot | null;
+
+export type Score4TwoPlayerStatus = "playing" | "won" | "draw";
+
+export type Score4TwoPlayerState = {
+	board: Score4TwoPlayerCell[][];
+	turn: Score4TwoPlayerSlot;
+	status: Score4TwoPlayerStatus;
+	winner: Score4TwoPlayerSlot | null;
 	updatedAt: number;
 };
 
@@ -66,33 +74,9 @@ export type Message =
 			type: "playroom-users-sync";
 			session: PlayroomUsersSessionInfo;
 			users: PlayroomUserProfile[];
+	  }
+	| {
+			type: "score4-two-player-state";
+			playroomSessionId: string;
+			state: Score4TwoPlayerState;
 	  };
-
-export const names = [
-	"Alice",
-	"Bob",
-	"Charlie",
-	"David",
-	"Eve",
-	"Frank",
-	"Grace",
-	"Heidi",
-	"Ivan",
-	"Judy",
-	"Kevin",
-	"Linda",
-	"Mallory",
-	"Nancy",
-	"Oscar",
-	"Peggy",
-	"Quentin",
-	"Randy",
-	"Steve",
-	"Trent",
-	"Ursula",
-	"Victor",
-	"Walter",
-	"Xavier",
-	"Yvonne",
-	"Zoe",
-];

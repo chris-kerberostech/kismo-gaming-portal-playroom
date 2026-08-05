@@ -7,13 +7,15 @@ import {
 	PlayroomTokenRole,
 	type ChatMessage,
 	type Message,
+	type Score4TwoPlayerState,
 } from "../shared";
 import {
 	UserContextProvider,
 	useUserContext,
 } from "./contexts/UserContext";
 // @ts-expect-error - JSX game module is intentionally imported from transferred game sources.
-import Score4 from "./games/Score4";
+import Score4SinglePlayer from "./games/Score4SinglePlayer";
+import Score4TwoPlayer from "./games/Score4TwoPlayer";
 
 function readBootstrapOptions() {
 	const url = new URL(window.location.href);
@@ -108,6 +110,7 @@ type AccessGateState =
 	| { status: "denied"; reason: string };
 
 type RealtimeConnectionStatus = "connecting" | "connected" | "reconnecting" | "disconnected";
+type PortalGameMode = "single" | "two-player" | "spectator";
 
 async function verifyBootstrapAccess(
 	token: string,
@@ -227,21 +230,25 @@ function PortalRealtime({
 	room,
 	identity,
 	isChatOpen,
+	gameMode,
 	onConnectionStatusChange,
 	onTwoPlayerDetected,
 }: {
 	room: string;
 	identity: BootstrapIdentity | null;
 	isChatOpen: boolean;
+	gameMode: PortalGameMode;
 	onConnectionStatusChange: (status: RealtimeConnectionStatus) => void;
 	onTwoPlayerDetected?: () => void;
 }) {
 	const [name, setName] = useState("Player");
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const [twoPlayerState, setTwoPlayerState] = useState<Score4TwoPlayerState | null>(null);
 	const [hasConnected, setHasConnected] = useState(false);
 	const scoreUpdateTimerRef = useRef<number | null>(null);
 	const pendingScoreRef = useRef<number | null>(null);
 	const {
+		session,
 		setSession,
 		setUsers,
 		registerAuthenticatedUser,
@@ -336,6 +343,13 @@ function PortalRealtime({
 
 			if (message.type === "all") {
 				setMessages(message.messages);
+				return;
+			}
+
+			if (message.type === "score4-two-player-state") {
+				if (!identity) return;
+				if (message.playroomSessionId !== identity.playroomSessionId) return;
+				setTwoPlayerState(message.state);
 			}
 		},
 		onClose: () => {
@@ -419,16 +433,51 @@ function PortalRealtime({
 		? (getUserProfileById(identity.userId)?.score ?? 0)
 		: 0;
 
+	const publishTwoPlayerState = useCallback(
+		(nextState: Score4TwoPlayerState) => {
+			if (!identity) return;
+			if (socket.readyState !== WebSocket.OPEN) return;
+
+			socket.send(
+				JSON.stringify({
+					type: "playroom-users-register",
+					role: identity.role,
+					userId: identity.userId,
+					playroomSessionId: identity.playroomSessionId,
+				} satisfies Message),
+			);
+
+			socket.send(
+				JSON.stringify({
+					type: "score4-two-player-state",
+					playroomSessionId: identity.playroomSessionId,
+					state: nextState,
+				} satisfies Message),
+			);
+		},
+		[identity, socket],
+	);
+
 	return (
 		<main className={`portal-main ${isChatOpen ? "chat-open" : "chat-closed"}`}>
 			{isChatOpen ? (
 				<ChatPanel room={room} messages={messages} onSend={sendChatMessage} name={name} />
 			) : null}
 			<section className="portal-game-panel" aria-label="Score4 game area">
-				<Score4
-					initialUserScore={myProfileScore}
-					onUserScoreChange={publishUserScoreUpdate}
-				/>
+				{gameMode === "single" ? (
+					<Score4SinglePlayer
+						initialUserScore={myProfileScore}
+						onUserScoreChange={publishUserScoreUpdate}
+					/>
+				) : (
+					<Score4TwoPlayer
+						identity={identity}
+						session={session}
+						getUserProfileById={getUserProfileById}
+						remoteState={twoPlayerState}
+						onPublishState={publishTwoPlayerState}
+					/>
+				)}
 			</section>
 		</main>
 	);
@@ -475,6 +524,7 @@ function PortalAppSinglePlayer({
 					room={bootstrapOptions.room}
 					identity={identity}
 					isChatOpen={false}
+					gameMode="single"
 					onConnectionStatusChange={setConnectionStatus}
 					onTwoPlayerDetected={onTwoPlayerDetected}
 				/>
@@ -488,6 +538,8 @@ function PortalApp2Player({ identity }: { identity: BootstrapIdentity | null }) 
 	const [connectionStatus, setConnectionStatus] = useState<RealtimeConnectionStatus>(
 		"connecting",
 	);
+	const gameMode: PortalGameMode =
+		identity?.role === PlayroomTokenRole.SPECTATOR ? "spectator" : "two-player";
 
 	const connectionStatusLabel =
 		connectionStatus === "connected"
@@ -503,7 +555,7 @@ function PortalApp2Player({ identity }: { identity: BootstrapIdentity | null }) 
 			<header className="portal-header">
 				<div className="portal-header-copy">
 					<h1>Score4 - Arena</h1>
-					<p>User Duel Mode</p>
+					<p>{gameMode === "spectator" ? "Spectator Mode" : "User Duel Mode"}</p>
 				</div>
 				<div className="portal-header-actions">
 					<span
@@ -526,6 +578,7 @@ function PortalApp2Player({ identity }: { identity: BootstrapIdentity | null }) 
 					room={bootstrapOptions.room}
 					identity={identity}
 					isChatOpen={isChatOpen}
+					gameMode={gameMode}
 					onConnectionStatusChange={setConnectionStatus}
 				/>
 			</UserContextProvider>

@@ -196,7 +196,7 @@ function parseUserIdFromToken(token) {
 }
 
 // ===== Component =====
-export default function Score4({ initialUserScore = 0, onUserScoreChange = null }) {
+export default function Score4SinglePlayer({ initialUserScore = 0, onUserScoreChange = null }) {
 
     // ========== i18n ==========
     const { t, i18n } = useTranslation();
