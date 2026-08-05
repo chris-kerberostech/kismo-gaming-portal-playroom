@@ -231,12 +231,13 @@ function ChatPanel({
 					styles={{
 						root: { width: "100%" },
 						input: {
-							height: "2.4rem",
-							lineHeight: "2.4rem",
+							height: "3rem",
+							lineHeight: "3rem",
 							borderRadius: "10px",
 							border: "1px solid rgba(123, 167, 255, 0.5)",
 							background: "rgba(5, 10, 24, 0.7)",
 							color: "var(--text-primary)",
+							fontSize: "1.04rem",
 						},
 					}}
 				/>
@@ -247,12 +248,12 @@ function ChatPanel({
 					gradient={{ from: "teal.4", to: "cyan.4", deg: 130 }}
 					styles={{
 						root: {
-							height: "2.4rem",
+							height: "3rem",
 							minWidth: "3.2rem",
 							paddingLeft: "0.95rem",
 							paddingRight: "0.95rem",
 							color: "#0a1327",
-							fontSize: "0.82rem",
+							fontSize: "0.9rem",
 							fontWeight: 800,
 							letterSpacing: "0.03em",
 							textTransform: "none",
