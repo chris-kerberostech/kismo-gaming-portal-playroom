@@ -565,7 +565,7 @@ export class Chat extends Server<Env> {
 
 		const rows = this.ctx.storage.sql
 			.exec(
-				`SELECT playroom_session_id, player_one_user_id, player_two_user_id, spectators_json, updated_at
+				`SELECT playroom_session_id, player_one_user_id, player_two_user_id, player_one_session_score, player_two_session_score, spectators_json, updated_at
 				 FROM playroom_users
 				 WHERE playroom_session_id = ?`,
 				playroomSessionId,
@@ -574,6 +574,8 @@ export class Chat extends Server<Env> {
 				playroom_session_id: string;
 				player_one_user_id: string | null;
 				player_two_user_id: string | null;
+				player_one_session_score: number | null;
+				player_two_session_score: number | null;
 				spectators_json: string | null;
 				updated_at: number | null;
 			}>;
@@ -586,6 +588,12 @@ export class Chat extends Server<Env> {
 			playroomSessionId: row.playroom_session_id,
 			playerOneUserId: row.player_one_user_id,
 			playerTwoUserId: row.player_two_user_id,
+			playerOneSessionScore: Number.isFinite(row.player_one_session_score)
+				? Number(row.player_one_session_score)
+				: 0,
+			playerTwoSessionScore: Number.isFinite(row.player_two_session_score)
+				? Number(row.player_two_session_score)
+				: 0,
 			spectatorUserIds: this.parseSpectators(row.spectators_json),
 			updatedAt: row.updated_at ?? Date.now(),
 		};
@@ -603,6 +611,12 @@ export class Chat extends Server<Env> {
 			playerTwoUserId: session.playerTwoUserId
 				? this.normalizeUserId(session.playerTwoUserId)
 				: null,
+			playerOneSessionScore: Number.isFinite(session.playerOneSessionScore)
+				? Math.max(0, Math.trunc(session.playerOneSessionScore))
+				: 0,
+			playerTwoSessionScore: Number.isFinite(session.playerTwoSessionScore)
+				? Math.max(0, Math.trunc(session.playerTwoSessionScore))
+				: 0,
 			spectatorUserIds: session.spectatorUserIds
 				.map((id) => this.normalizeUserId(id))
 				.filter((id, index, list) => id.length > 0 && list.indexOf(id) === index),
@@ -610,17 +624,21 @@ export class Chat extends Server<Env> {
 		};
 
 		this.ctx.storage.sql.exec(
-			`INSERT INTO playroom_users (playroom_session_id, player_one_user_id, player_two_user_id, spectators_json, updated_at)
-			 VALUES (?, ?, ?, ?, ?)
+			`INSERT INTO playroom_users (playroom_session_id, player_one_user_id, player_two_user_id, player_one_session_score, player_two_session_score, spectators_json, updated_at)
+			 VALUES (?, ?, ?, ?, ?, ?, ?)
 			 ON CONFLICT (playroom_session_id)
 			 DO UPDATE SET
 				player_one_user_id = excluded.player_one_user_id,
 				player_two_user_id = excluded.player_two_user_id,
+				player_one_session_score = excluded.player_one_session_score,
+				player_two_session_score = excluded.player_two_session_score,
 				spectators_json = excluded.spectators_json,
 				updated_at = excluded.updated_at`,
 			normalized.playroomSessionId,
 			normalized.playerOneUserId,
 			normalized.playerTwoUserId,
+			normalized.playerOneSessionScore,
+			normalized.playerTwoSessionScore,
 			this.serializeSpectators(normalized.spectatorUserIds),
 			normalized.updatedAt,
 		);
@@ -640,6 +658,8 @@ export class Chat extends Server<Env> {
 				playroomSessionId: args.playroomSessionId,
 				playerOneUserId: null,
 				playerTwoUserId: null,
+				playerOneSessionScore: 0,
+				playerTwoSessionScore: 0,
 				spectatorUserIds: [],
 				updatedAt: Date.now(),
 			};
@@ -678,12 +698,42 @@ export class Chat extends Server<Env> {
 		});
 	}
 
+	incrementTwoPlayerSessionScore(
+		playroomSessionId: string,
+		winner: "player_one" | "player_two",
+	): PlayroomUsersSessionInfo {
+		const current =
+			this.loadUsersSession(playroomSessionId) ?? {
+				playroomSessionId,
+				playerOneUserId: null,
+				playerTwoUserId: null,
+				playerOneSessionScore: 0,
+				playerTwoSessionScore: 0,
+				spectatorUserIds: [],
+				updatedAt: Date.now(),
+			};
+
+		if (winner === "player_one") {
+			return this.upsertUsersSession({
+				...current,
+				playerOneSessionScore: current.playerOneSessionScore + 1,
+			});
+		}
+
+		return this.upsertUsersSession({
+			...current,
+			playerTwoSessionScore: current.playerTwoSessionScore + 1,
+		});
+	}
+
 	broadcastUsersSync(playroomSessionId: string) {
 		const session =
 			this.loadUsersSession(playroomSessionId) ?? {
 				playroomSessionId,
 				playerOneUserId: null,
 				playerTwoUserId: null,
+				playerOneSessionScore: 0,
+				playerTwoSessionScore: 0,
 				spectatorUserIds: [],
 				updatedAt: Date.now(),
 			};
@@ -757,10 +807,32 @@ export class Chat extends Server<Env> {
 				playroom_session_id TEXT PRIMARY KEY,
 				player_one_user_id TEXT,
 				player_two_user_id TEXT,
+				player_one_session_score INTEGER NOT NULL DEFAULT 0,
+				player_two_session_score INTEGER NOT NULL DEFAULT 0,
 				spectators_json TEXT NOT NULL DEFAULT '[]',
 				updated_at INTEGER NOT NULL
 			)`,
 		);
+
+		const playroomUsersTableColumns = this.ctx.storage.sql
+			.exec(`PRAGMA table_info(playroom_users)`)
+			.toArray() as Array<{ name: string }>;
+		const hasPlayerOneSessionScoreColumn = playroomUsersTableColumns.some(
+			(column) => column.name === "player_one_session_score",
+		);
+		if (!hasPlayerOneSessionScoreColumn) {
+			this.ctx.storage.sql.exec(
+				`ALTER TABLE playroom_users ADD COLUMN player_one_session_score INTEGER NOT NULL DEFAULT 0`,
+			);
+		}
+		const hasPlayerTwoSessionScoreColumn = playroomUsersTableColumns.some(
+			(column) => column.name === "player_two_session_score",
+		);
+		if (!hasPlayerTwoSessionScoreColumn) {
+			this.ctx.storage.sql.exec(
+				`ALTER TABLE playroom_users ADD COLUMN player_two_session_score INTEGER NOT NULL DEFAULT 0`,
+			);
+		}
 
 		this.ctx.storage.sql.exec(
 			`CREATE TABLE IF NOT EXISTS users (
@@ -945,6 +1017,29 @@ export class Chat extends Server<Env> {
 			}
 
 			this.broadcast(JSON.stringify(parsed));
+			return;
+		}
+
+		if (parsed.type === "score4-two-player-session-score-update") {
+			const bound = this.connectionUsers.get(connection.id);
+			if (!bound) {
+				return;
+			}
+
+			if (bound.playroomSessionId !== parsed.playroomSessionId) {
+				if (this.isDevRuntime()) {
+					authLog("warn", "score4_two_player_session_score_rejected_dev", {
+						reason: "session_mismatch",
+						connectionId: connection.id,
+						boundPlayroomSessionId: bound.playroomSessionId,
+						incomingPlayroomSessionId: parsed.playroomSessionId,
+					});
+				}
+				return;
+			}
+
+			this.incrementTwoPlayerSessionScore(parsed.playroomSessionId, parsed.winner);
+			this.broadcastUsersSync(parsed.playroomSessionId);
 			return;
 		}
 

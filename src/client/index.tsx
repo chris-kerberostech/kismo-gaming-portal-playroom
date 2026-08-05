@@ -12,6 +12,7 @@ import {
 	PlayroomTokenRole,
 	type ChatMessage,
 	type Message,
+	type Score4TwoPlayerSlot,
 	type Score4TwoPlayerState,
 } from "../shared";
 import {
@@ -503,6 +504,31 @@ function PortalRealtime({
 		[identity, socket],
 	);
 
+	const publishTwoPlayerSessionWinner = useCallback(
+		(winner: Score4TwoPlayerSlot) => {
+			if (!identity) return;
+			if (socket.readyState !== WebSocket.OPEN) return;
+
+			socket.send(
+				JSON.stringify({
+					type: "playroom-users-register",
+					role: identity.role,
+					userId: identity.userId,
+					playroomSessionId: identity.playroomSessionId,
+				} satisfies Message),
+			);
+
+			socket.send(
+				JSON.stringify({
+					type: "score4-two-player-session-score-update",
+					playroomSessionId: identity.playroomSessionId,
+					winner,
+				} satisfies Message),
+			);
+		},
+		[identity, socket],
+	);
+
 	return (
 		<main className={`portal-main ${isChatOpen ? "chat-open" : "chat-closed"}`}>
 			{isChatOpen ? (
@@ -521,6 +547,7 @@ function PortalRealtime({
 						getUserProfileById={getUserProfileById}
 						remoteState={twoPlayerState}
 						onPublishState={publishTwoPlayerState}
+						onSessionWinner={publishTwoPlayerSessionWinner}
 					/>
 				)}
 			</section>

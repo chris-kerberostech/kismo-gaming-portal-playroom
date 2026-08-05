@@ -53,6 +53,8 @@ function createEmptySession(playroomSessionId: string): PlayroomUsersSessionInfo
 		playroomSessionId,
 		playerOneUserId: null,
 		playerTwoUserId: null,
+		playerOneSessionScore: 0,
+		playerTwoSessionScore: 0,
 		spectatorUserIds: [],
 		updatedAt: Date.now(),
 	};

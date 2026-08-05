@@ -15,6 +15,8 @@ export type PlayroomUsersSessionInfo = {
 	playroomSessionId: string;
 	playerOneUserId: string | null;
 	playerTwoUserId: string | null;
+	playerOneSessionScore: number;
+	playerTwoSessionScore: number;
 	spectatorUserIds: string[];
 	updatedAt: number;
 };
@@ -79,4 +81,9 @@ export type Message =
 			type: "score4-two-player-state";
 			playroomSessionId: string;
 			state: Score4TwoPlayerState;
+	  }
+	| {
+			type: "score4-two-player-session-score-update";
+			playroomSessionId: string;
+			winner: Score4TwoPlayerSlot;
 	  };

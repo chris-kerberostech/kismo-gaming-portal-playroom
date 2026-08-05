@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import {
 	PlayroomTokenRole,
@@ -15,6 +15,8 @@ import UserAvatar from "../components/score4/UserAvatar";
 import "../styles/score4/board.css";
 import "../styles/score4/styles.css";
 
+const SOUND_PREFERENCE_KEY = "score4-two-player-sound-on";
+
 type Identity = {
 	role: PlayroomTokenRole;
 	userId: string;
@@ -27,6 +29,7 @@ type Score4TwoPlayerProps = {
 	getUserProfileById: (userId: string) => PlayroomUserProfile | null;
 	remoteState: Score4TwoPlayerState | null;
 	onPublishState: (state: Score4TwoPlayerState) => void;
+	onSessionWinner: (winner: Score4TwoPlayerSlot) => void;
 };
 
 function normalizeUserId(userId: string): string {
@@ -135,13 +138,86 @@ function toBoardClasses(board: Score4TwoPlayerCell[][]): Array<Array<"fuchsia" |
 }
 
 export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
-	const { identity, session, getUserProfileById, remoteState, onPublishState } = props;
+	const { identity, session, getUserProfileById, remoteState, onPublishState, onSessionWinner } =
+		props;
 	const [state, setState] = useState<Score4TwoPlayerState>(createInitialState);
+	const [soundOn, setSoundOn] = useState<boolean>(() => {
+		try {
+			const storedValue = window.localStorage.getItem(SOUND_PREFERENCE_KEY);
+			if (storedValue === "false") return false;
+			if (storedValue === "true") return true;
+		} catch {
+			// Keep default sound preference when storage is unavailable.
+		}
+		return true;
+	});
+	const playerOneMoveSoundRef = useRef<HTMLAudioElement | null>(null);
+	const playerTwoMoveSoundRef = useRef<HTMLAudioElement | null>(null);
+	const previousBoardRef = useRef<Score4TwoPlayerCell[][] | null>(null);
+	const lastWinnerUpdateAtRef = useRef<number | null>(null);
+	const localWinnerStateUpdatedAtRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		if (!remoteState) return;
 		setState(remoteState);
 	}, [remoteState]);
+
+	useEffect(() => {
+		const allAudio = [playerOneMoveSoundRef.current, playerTwoMoveSoundRef.current].filter(
+			(Boolean),
+		) as HTMLAudioElement[];
+		allAudio.forEach((audio) => {
+			audio.muted = !soundOn;
+		});
+	}, [soundOn]);
+
+	useEffect(() => {
+		try {
+			window.localStorage.setItem(SOUND_PREFERENCE_KEY, soundOn ? "true" : "false");
+		} catch {
+			// Ignore persistence failures and keep in-memory preference.
+		}
+	}, [soundOn]);
+
+	useEffect(() => {
+		const previousBoard = previousBoardRef.current;
+		if (!previousBoard) {
+			previousBoardRef.current = state.board.map((row) => [...row]);
+			return;
+		}
+
+		let movedToken: Score4TwoPlayerSlot | null = null;
+		let changes = 0;
+
+		for (let row = 0; row < state.board.length; row += 1) {
+			for (let col = 0; col < (state.board[row]?.length ?? 0); col += 1) {
+				const before = previousBoard[row]?.[col] ?? null;
+				const after = state.board[row]?.[col] ?? null;
+				if (before === after) continue;
+				changes += 1;
+				if (before === null && after !== null) {
+					movedToken = after;
+				}
+			}
+		}
+
+		if (changes === 1 && movedToken) {
+			const moveSound =
+				movedToken === "player_one"
+					? playerOneMoveSoundRef.current
+					: playerTwoMoveSoundRef.current;
+			if (moveSound) {
+				try {
+					moveSound.currentTime = 0;
+					void moveSound.play();
+				} catch {
+					// Ignore playback failures caused by browser autoplay policies.
+				}
+			}
+		}
+
+		previousBoardRef.current = state.board.map((row) => [...row]);
+	}, [state.board]);
 
 	const me = identity ? normalizeUserId(identity.userId) : null;
 	const playerOneId = session?.playerOneUserId ?? null;
@@ -158,6 +234,16 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 		identity?.role === PlayroomTokenRole.SPECTATOR ||
 		(!mySlot && Boolean(identity));
 
+	useEffect(() => {
+		if (state.status !== "won" || !state.winner) return;
+		if (mySlot !== state.winner) return;
+		if (localWinnerStateUpdatedAtRef.current !== state.updatedAt) return;
+		if (lastWinnerUpdateAtRef.current === state.updatedAt) return;
+
+		lastWinnerUpdateAtRef.current = state.updatedAt;
+		onSessionWinner(state.winner);
+	}, [mySlot, onSessionWinner, state.status, state.updatedAt, state.winner]);
+
 	const bothPlayersPresent = Boolean(playerOneId && playerTwoId);
 	const canPlay =
 		bothPlayersPresent &&
@@ -168,6 +254,12 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 
 	const playerOneProfile = playerOneId ? getUserProfileById(playerOneId) : null;
 	const playerTwoProfile = playerTwoId ? getUserProfileById(playerTwoId) : null;
+	const playerOnePersistentScore =
+		typeof playerOneProfile?.score === "number" ? playerOneProfile.score : 0;
+	const playerTwoPersistentScore =
+		typeof playerTwoProfile?.score === "number" ? playerTwoProfile.score : 0;
+	const playerOneSessionScore = session?.playerOneSessionScore ?? 0;
+	const playerTwoSessionScore = session?.playerTwoSessionScore ?? 0;
 
 	const statusText = (() => {
 		if (!bothPlayersPresent) return "Waiting for player two to join";
@@ -203,6 +295,10 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 			updatedAt: Date.now(),
 		};
 
+		if (winner === mySlot) {
+			localWinnerStateUpdatedAtRef.current = nextState.updatedAt;
+		}
+
 		setState(nextState);
 		onPublishState(nextState);
 	};
@@ -216,6 +312,47 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 
 	return (
 		<div className="game-container" style={{ position: "relative" }}>
+			<audio ref={playerOneMoveSoundRef} src="/score4Assets/sounds/KismoTurnSound.mp3" preload="auto" />
+			<audio ref={playerTwoMoveSoundRef} src="/score4Assets/sounds/UserturnSound.mp3" preload="auto" />
+
+			<button
+				type="button"
+				onClick={() => setSoundOn((current) => !current)}
+				className="sound-btn"
+				aria-label={soundOn ? "Mute sounds" : "Unmute sounds"}
+				style={{
+					position: "absolute",
+					top: 72,
+					right: 24,
+					zIndex: 45,
+					background: "rgba(21,22,32,0.92)",
+					border: "2px solid #32b2ea",
+					borderRadius: "50%",
+					width: 42,
+					height: 42,
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					fontSize: 24,
+					color: "#fff",
+					cursor: "pointer",
+					boxShadow: "0 0 14px #32b2ea, 0 0 18px #de0b59",
+					transition: "all .18s cubic-bezier(.55,1.8,.52,.91)",
+				}}
+			>
+				{soundOn ? "🔈" : "🔇"}
+			</button>
+
+			<div className="scoreboard" style={{ marginBottom: 10 }}>
+				<span>
+					Session Score - Player One: <b>{playerOneSessionScore}</b>
+				</span>
+				<span style={{ margin: "0 1rem" }}>|</span>
+				<span>
+					Player Two: <b>{playerTwoSessionScore}</b>
+				</span>
+			</div>
+
 			<div className="scoreboard" style={{ marginBottom: 16 }}>
 				<span>{statusText}</span>
 			</div>
@@ -232,16 +369,40 @@ export default function Score4TwoPlayer(props: Score4TwoPlayerProps) {
 					flexWrap: "wrap",
 				}}
 			>
-				<UserAvatar
-					url={playerOneProfile?.imageUrl || "https://i.pravatar.cc/150?img=12"}
-					nickname={playerOneProfile?.name || "Player One"}
-					active={state.turn === "player_one" && state.status === "playing"}
-				/>
-				<UserAvatar
-					url={playerTwoProfile?.imageUrl || "https://i.pravatar.cc/150?img=32"}
-					nickname={playerTwoProfile?.name || "Player Two"}
-					active={state.turn === "player_two" && state.status === "playing"}
-				/>
+				<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+					<UserAvatar
+						url={playerOneProfile?.imageUrl || "https://i.pravatar.cc/150?img=12"}
+						nickname={playerOneProfile?.name || "Player One"}
+						active={state.turn === "player_one" && state.status === "playing"}
+					/>
+					<div
+						style={{
+							fontSize: "1.05rem",
+							fontWeight: 700,
+							color: "#de0b59",
+							textShadow: "0 0 6px #de0b59",
+						}}
+					>
+						Score: {playerOnePersistentScore}
+					</div>
+				</div>
+				<div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+					<UserAvatar
+						url={playerTwoProfile?.imageUrl || "https://i.pravatar.cc/150?img=32"}
+						nickname={playerTwoProfile?.name || "Player Two"}
+						active={state.turn === "player_two" && state.status === "playing"}
+					/>
+					<div
+						style={{
+							fontSize: "1.05rem",
+							fontWeight: 700,
+							color: "#32b2ea",
+							textShadow: "0 0 6px #32b2ea",
+						}}
+					>
+						Score: {playerTwoPersistentScore}
+					</div>
+				</div>
 			</div>
 
 			{state.status !== "playing" && !isSpectator ? (
