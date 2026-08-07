@@ -15,6 +15,7 @@ import { Button } from "@mantine/core";
 import { useUserContext } from "../contexts/UserContext";
 import { COLOR_PLAYER, COLOR_KISMO, VOICE_VOL } from "../Constants";
 import NewGameAlert from "../components/score4/NewGameAlert";
+import { debugLog } from "../debugLog";
 
 
 // ---- Quotes ----
@@ -320,14 +321,14 @@ export default function Score4SinglePlayer({ initialUserScore = 0, onUserScoreCh
     // and when they change, the app should update also the user score
     const [sessionSparks, setSessionSparks] = useState(resolvedUserScore || 0);
     useEffect(() => {
-        console.debug("Session sparks updated:", sessionSparks);
+        debugLog("Session sparks updated:", sessionSparks);
 
         if (sessionSparks === userScore) return;
         setUserScore(sessionSparks);
 
         if (typeof onUserScoreChange === "function") {
             onUserScoreChange(sessionSparks);
-            console.debug("User score updated to", sessionSparks);
+            debugLog("User score updated to", sessionSparks);
         }
     }, [sessionSparks, userScore, onUserScoreChange]);
 

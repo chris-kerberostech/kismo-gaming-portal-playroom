@@ -15,6 +15,7 @@ import {
 	type Score4TwoPlayerSlot,
 	type Score4TwoPlayerState,
 } from "../shared";
+import { debugWarn } from "./debugLog";
 import {
 	UserContextProvider,
 	useUserContext,
@@ -695,7 +696,7 @@ function PortalAppBootstrap() {
 					(window.location.hostname === "localhost" ||
 						window.location.hostname === "127.0.0.1")
 				) {
-					console.warn("[playroom verify debug]", {
+					debugWarn("[playroom verify debug]", {
 						reason: result.reason,
 						debug: result.debug,
 						url: window.location.href,
