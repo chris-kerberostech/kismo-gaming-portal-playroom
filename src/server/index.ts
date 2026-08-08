@@ -29,7 +29,12 @@ type AuthEnv = Env & FirebaseEnv & {
 	AUTH_ALLOW_FALLBACK?: string;
 	NODE_ENV?: string;
 	ENVIRONMENT?: string;
+	AWS_FETCHANDUPDATE_KISMOUSER_LAMBDA_API_KEY?: string;
+	AWS_FETCHANDUPDATE_KISMOUSER_LAMBDA_URL?: string;
 };
+
+const FETCH_AND_UPDATE_KISMOUSER_LAMBDA_URL =
+	"https://z33gfeaoxf.execute-api.eu-north-1.amazonaws.com/production/fetchAndUpdateKismoUser";
 
 function isDevRequest(env: AuthEnv, url: URL): boolean {
 	if (env.NODE_ENV === "development" || env.ENVIRONMENT === "development") {
@@ -69,6 +74,228 @@ function authLog(
 		return;
 	}
 	console.log(payload);
+}
+
+function canonicalizeUserIdForLambda(value: string): string {
+	const trimmed = value.trim().toLowerCase();
+	if (!trimmed) return "";
+	if (trimmed.includes("-") && trimmed.length === 36) return trimmed;
+
+	const compact = trimmed.replace(/-/g, "");
+	if (compact.length !== 32) return trimmed;
+
+	return [
+		compact.slice(0, 8),
+		compact.slice(8, 12),
+		compact.slice(12, 16),
+		compact.slice(16, 20),
+		compact.slice(20),
+	].join("-");
+}
+
+function parseJsonSafely(value: string): unknown {
+	try {
+		return JSON.parse(value);
+	} catch {
+		return null;
+	}
+}
+
+function extractScoreFromUnknown(payload: unknown, depth = 0): number | null {
+	if (depth > 8) return null;
+
+	if (typeof payload === "number") {
+		return Number.isFinite(payload) ? payload : null;
+	}
+
+	if (typeof payload === "string") {
+		const trimmed = payload.trim();
+		if (!trimmed) return null;
+		if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+			return extractScoreFromUnknown(parseJsonSafely(trimmed), depth + 1);
+		}
+		const parsed = Number(trimmed);
+		return Number.isFinite(parsed) ? parsed : null;
+	}
+
+	if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+		return null;
+	}
+
+	const record = payload as Record<string, unknown>;
+	const preferredKeys = [
+		"score",
+		"userScore",
+		"kismoScore",
+		"newScore",
+		"updatedScore",
+		"body",
+		"data",
+		"result",
+		"item",
+		"user",
+		"kismoUser",
+	];
+
+	for (const key of preferredKeys) {
+		if (!Object.hasOwn(record, key)) continue;
+		const found = extractScoreFromUnknown(record[key], depth + 1);
+		if (typeof found === "number") return found;
+	}
+
+	for (const value of Object.values(record)) {
+		const found = extractScoreFromUnknown(value, depth + 1);
+		if (typeof found === "number") return found;
+	}
+
+	return null;
+}
+
+async function fetchKismoUserScoreFromLambda(args: {
+	env: AuthEnv;
+	userId: string;
+	traceId: string;
+}): Promise<number | null> {
+	const { env, userId, traceId } = args;
+	const apiKey = env.AWS_FETCHANDUPDATE_KISMOUSER_LAMBDA_API_KEY || "";
+	if (!apiKey) {
+		authLog("warn", "kismo_user_lambda_score_fetch_skipped", {
+			traceId,
+			reason: "missing_api_key",
+			userId,
+		});
+		return null;
+	}
+
+	const endpoint =
+		env.AWS_FETCHANDUPDATE_KISMOUSER_LAMBDA_URL ||
+		FETCH_AND_UPDATE_KISMOUSER_LAMBDA_URL;
+	const canonicalUserId = canonicalizeUserIdForLambda(userId);
+	const url = new URL(endpoint);
+	url.searchParams.set("id", canonicalUserId);
+
+	let response: Response;
+	try {
+		response = await fetch(url.toString(), {
+			method: "GET",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: JSON.stringify({
+				apiKey,
+			}),
+		});
+	} catch (error) {
+		authLog("warn", "kismo_user_lambda_score_fetch_failed", {
+			traceId,
+			userId: canonicalUserId,
+			reason: "request_error",
+			error:
+				error instanceof Error
+					? { name: error.name, message: error.message }
+					: String(error),
+		});
+		return null;
+	}
+
+	if (!response.ok) {
+		authLog("warn", "kismo_user_lambda_score_fetch_failed", {
+			traceId,
+			userId: canonicalUserId,
+			reason: "http_error",
+			status: response.status,
+		});
+		return null;
+	}
+
+	const rawText = await response.text();
+	const payload = parseJsonSafely(rawText);
+	const score = extractScoreFromUnknown(payload);
+
+	if (!Number.isFinite(score)) {
+		authLog("warn", "kismo_user_lambda_score_fetch_failed", {
+			traceId,
+			userId: canonicalUserId,
+			reason: "score_missing_in_payload",
+		});
+		return null;
+	}
+
+	return score;
+}
+
+async function updateKismoUserScoreInLambda(args: {
+	env: AuthEnv;
+	userId: string;
+	score: number;
+	traceId: string;
+	context: "auth_upsert" | "runtime_score_update" | "two_player_winner_increment";
+}): Promise<void> {
+	const { env, userId, score, traceId, context } = args;
+	const apiKey = env.AWS_FETCHANDUPDATE_KISMOUSER_LAMBDA_API_KEY || "";
+	if (!apiKey) {
+		authLog("warn", "kismo_user_lambda_score_update_skipped", {
+			traceId,
+			context,
+			reason: "missing_api_key",
+			userId,
+		});
+		return;
+	}
+
+	const endpoint =
+		env.AWS_FETCHANDUPDATE_KISMOUSER_LAMBDA_URL ||
+		FETCH_AND_UPDATE_KISMOUSER_LAMBDA_URL;
+	const canonicalUserId = canonicalizeUserIdForLambda(userId);
+	const url = new URL(endpoint);
+
+	try {
+		const response = await fetch(url.toString(), {
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+			body: JSON.stringify({
+				apiKey,
+				id: canonicalUserId,
+				updates: {
+					score,
+				},
+			}),
+		});
+
+		if (!response.ok) {
+			authLog("warn", "kismo_user_lambda_score_update_failed", {
+				traceId,
+				context,
+				userId: canonicalUserId,
+				score,
+				status: response.status,
+			});
+			return;
+		}
+
+		authLog("info", "kismo_user_lambda_score_updated", {
+			traceId,
+			context,
+			userId: canonicalUserId,
+			score,
+		});
+	} catch (error) {
+		authLog("warn", "kismo_user_lambda_score_update_failed", {
+			traceId,
+			context,
+			userId: canonicalUserId,
+			score,
+			reason: "request_error",
+			error:
+				error instanceof Error
+					? { name: error.name, message: error.message }
+					: String(error),
+		});
+	}
 }
 
 function parseCookies(cookieHeader: string | null): Record<string, string> {
@@ -368,11 +595,10 @@ async function upsertAuthenticatedUserProfile(args: {
 	}
 
 	if (devMode) {
-		authLog("info", "user_score_claim_parsed_dev", {
+		authLog("info", "user_identity_parsed_dev", {
 			traceId,
 			room,
 			userId: identity.userId,
-			scoreFromTokenClaim: identity.score,
 		});
 	}
 
@@ -409,15 +635,21 @@ async function upsertAuthenticatedUserProfile(args: {
 		}
 	}
 
-	const tokenScore = typeof identity.score === "number" ? identity.score : null;
+	const lambdaScore = await fetchKismoUserScoreFromLambda({
+		env: env as AuthEnv,
+		userId: identity.userId,
+		traceId,
+	});
 	const dataConnectScore = typeof profile.score === "number" ? profile.score : null;
-	// DO score is authoritative once a profile exists in the room store.
+	// Dynamo score (via Lambda) is authoritative when available.
 	const mergedScore =
-		typeof existingScore === "number"
-			? existingScore
-			: typeof dataConnectScore === "number"
+		typeof lambdaScore === "number"
+			? lambdaScore
+			: typeof existingScore === "number"
+				? existingScore
+				: typeof dataConnectScore === "number"
 				? dataConnectScore
-				: tokenScore;
+				: null;
 
 	const response = await stub.fetch("https://internal/users?op=upsert", {
 		method: "POST",
@@ -443,11 +675,21 @@ async function upsertAuthenticatedUserProfile(args: {
 			traceId,
 			room,
 			userId: payload.profile?.userId ?? identity.userId,
-			scoreFromTokenClaim: tokenScore,
+			scoreFromLambda: lambdaScore,
 			scoreFromDataConnectProfile: dataConnectScore,
 			scoreExistingInDoBeforeUpsert: existingScore,
 			scoreMergedForUpsert: mergedScore,
 			scoreStoredInDo: payload.profile?.score ?? null,
+		});
+	}
+
+	if (typeof mergedScore === "number") {
+		await updateKismoUserScoreInLambda({
+			env: env as AuthEnv,
+			userId: identity.userId,
+			score: mergedScore,
+			traceId,
+			context: "auth_upsert",
 		});
 	}
 
@@ -1009,7 +1251,16 @@ export class Chat extends Server<Env> {
 			const pendingScore = this.pendingScoreUpdates.get(connection.id);
 			if (typeof pendingScore === "number" && Number.isFinite(pendingScore)) {
 				this.pendingScoreUpdates.delete(connection.id);
-				this.updateUserScore(parsed.userId, pendingScore);
+				const updatedProfile = this.updateUserScore(parsed.userId, pendingScore);
+				if (typeof updatedProfile.score === "number") {
+					void updateKismoUserScoreInLambda({
+						env: this.env as AuthEnv,
+						userId: parsed.userId,
+						score: updatedProfile.score,
+						traceId: connection.id,
+						context: "runtime_score_update",
+					});
+				}
 				if (this.isDevRuntime()) {
 					authLog("info", "user_score_runtime_update_queued_applied_dev", {
 						connectionId: connection.id,
@@ -1060,6 +1311,15 @@ export class Chat extends Server<Env> {
 
 			const previousProfile = this.loadUserProfile(bound.userId);
 			const updatedProfile = this.updateUserScore(bound.userId, parsed.score);
+			if (typeof updatedProfile.score === "number") {
+				void updateKismoUserScoreInLambda({
+					env: this.env as AuthEnv,
+					userId: bound.userId,
+					score: updatedProfile.score,
+					traceId: connection.id,
+					context: "runtime_score_update",
+				});
+			}
 
 			if (this.isDevRuntime()) {
 				authLog("info", "user_score_runtime_update_dev", {
@@ -1126,7 +1386,16 @@ export class Chat extends Server<Env> {
 					: updatedSession.playerTwoUserId;
 
 			if (winnerUserId) {
-				this.incrementUserScore(winnerUserId, 1);
+				const winnerProfile = this.incrementUserScore(winnerUserId, 1);
+				if (typeof winnerProfile.score === "number") {
+					void updateKismoUserScoreInLambda({
+						env: this.env as AuthEnv,
+						userId: winnerUserId,
+						score: winnerProfile.score,
+						traceId: connection.id,
+						context: "two_player_winner_increment",
+					});
+				}
 			}
 			this.broadcastUsersSync(parsed.playroomSessionId);
 			return;
