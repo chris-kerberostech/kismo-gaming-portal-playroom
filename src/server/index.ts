@@ -173,24 +173,25 @@ async function fetchKismoUserScoreFromLambda(args: {
 	const canonicalUserId = canonicalizeUserIdForLambda(userId);
 	const url = new URL(endpoint);
 	url.searchParams.set("id", canonicalUserId);
+	const apiKeyFingerprint = await stableFingerprint(apiKey);
 
 	let response: Response;
 	try {
 		response = await fetch(url.toString(), {
 			method: "GET",
 			headers: {
-				"Content-Type": "application/json",
 				Accept: "application/json",
+				"x-api-key": apiKey,
 			},
-			body: JSON.stringify({
-				apiKey,
-			}),
 		});
 	} catch (error) {
 		authLog("warn", "kismo_user_lambda_score_fetch_failed", {
 			traceId,
 			userId: canonicalUserId,
 			reason: "request_error",
+			apiKeyFingerprint,
+			endpointHost: url.host,
+			endpointPath: url.pathname,
 			error:
 				error instanceof Error
 					? { name: error.name, message: error.message }
@@ -200,11 +201,27 @@ async function fetchKismoUserScoreFromLambda(args: {
 	}
 
 	if (!response.ok) {
+		let errorBodyRaw = "";
+		let errorBodyParsed: unknown = null;
+		try {
+			errorBodyRaw = await response.text();
+			errorBodyParsed = parseJsonSafely(errorBodyRaw);
+		} catch {
+			// Ignore response body read errors; status + headers are still useful.
+		}
+
 		authLog("warn", "kismo_user_lambda_score_fetch_failed", {
 			traceId,
 			userId: canonicalUserId,
 			reason: "http_error",
+			apiKeyFingerprint,
+			endpointHost: url.host,
+			endpointPath: url.pathname,
 			status: response.status,
+			statusText: response.statusText,
+			wwwAuthenticate: response.headers.get("www-authenticate"),
+			errorBody: errorBodyParsed,
+			errorBodyRaw,
 		});
 		return null;
 	}
@@ -256,9 +273,9 @@ async function updateKismoUserScoreInLambda(args: {
 			headers: {
 				"Content-Type": "application/json",
 				Accept: "application/json",
+				"x-api-key": apiKey,
 			},
 			body: JSON.stringify({
-				apiKey,
 				id: canonicalUserId,
 				updates: {
 					score,
@@ -267,12 +284,25 @@ async function updateKismoUserScoreInLambda(args: {
 		});
 
 		if (!response.ok) {
+			let errorBodyRaw = "";
+			let errorBodyParsed: unknown = null;
+			try {
+				errorBodyRaw = await response.text();
+				errorBodyParsed = parseJsonSafely(errorBodyRaw);
+			} catch {
+				// Ignore response body read errors; status + headers are still useful.
+			}
+
 			authLog("warn", "kismo_user_lambda_score_update_failed", {
 				traceId,
 				context,
 				userId: canonicalUserId,
 				score,
 				status: response.status,
+				statusText: response.statusText,
+				wwwAuthenticate: response.headers.get("www-authenticate"),
+				errorBody: errorBodyParsed,
+				errorBodyRaw,
 			});
 			return;
 		}
